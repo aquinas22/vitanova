@@ -4,171 +4,212 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vita Nova Charting</title>
-    <!-- Fonts -->
+    <title>Vita Nova · Creighton Model Fertility Charting</title>
+    <meta name="description" content="A simple, beautiful way to chart your cycle with the Creighton Model FertilityCare System — for family planning and women's health.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
 </head>
 
 <body>
 
-    <div class="app-wrapper">
-        <header>
-            <div class="logo">
-                <a href="index.html"><span>🌸</span> Vita Nova Charting</a>
-            </div>
-            <div id="user-info" class="hidden">
-                <span id="user-email"></span>
-                <button id="logout-btn" class="btn-secondary">Logout</button>
-            </div>
-        </header>
+    <header class="site-header">
+        <a class="logo" href="index.html"><span class="logo-mark">🌸</span> Vita Nova</a>
+        <nav class="site-nav">
+            <a href="#learn">Learn</a>
+            <a href="#benefits">Health benefits</a>
+            <a href="#rules">The rules</a>
+            <a href="chart.html" class="btn btn-primary btn-sm">Open my chart</a>
+        </nav>
+    </header>
 
-        <!-- Welcome Container -->
-        <div id="welcome-container">
-            <div class="welcome-hero">
-                <h1>Track Your Fertility with Confidence</h1>
-                <p class="subtitle">A simple, beautiful way to chart your fertility using the Creighton Model System.</p>
+    <main>
+        <!-- Hero -->
+        <section class="hero">
+            <div class="hero-inner">
+                <p class="eyebrow">Creighton Model FertilityCare™ System</p>
+                <h1>Understand your cycle with clarity and confidence.</h1>
+                <p class="lede">Vita Nova is a gentle, beautiful way to chart your fertility using the
+                    Creighton Model — a standardized, doctor-developed method for natural family planning
+                    and women's health.</p>
                 <div class="hero-actions">
-                    <button id="btn-get-started" class="btn-primary">Login / Sign Up</button>
-                    <button id="btn-guest-mode" class="btn-outline">Try it out (Guest Mode)</button>
+                    <a href="chart.html" class="btn btn-primary btn-lg">Start charting — it's free</a>
+                    <a href="#learn" class="btn btn-outline btn-lg">Learn how it works</a>
+                </div>
+                <p class="hero-note">No account required. Your chart is saved privately on your device.</p>
+            </div>
+            <div class="hero-card" aria-hidden="true">
+                <div class="mini-strip">
+                    <div class="mini-day"><span class="sticker sticker-red"></span><b>1</b></div>
+                    <div class="mini-day"><span class="sticker sticker-red"></span><b>2</b></div>
+                    <div class="mini-day"><span class="sticker sticker-green"></span><b>3</b></div>
+                    <div class="mini-day"><span class="sticker sticker-white-baby">👶</span><b>4</b></div>
+                    <div class="mini-day"><span class="sticker sticker-white-baby"><span class="sticker-baby">👶</span><span class="sticker-count">P</span></span><b>5</b></div>
+                    <div class="mini-day"><span class="sticker sticker-white-baby"><span class="sticker-baby">👶</span><span class="sticker-count">1</span></span><b>6</b></div>
+                    <div class="mini-day"><span class="sticker sticker-green"></span><b>7</b></div>
+                </div>
+                <p class="mini-caption">A single day, a single sticker — your whole cycle at a glance.</p>
+            </div>
+        </section>
+
+        <!-- What is it -->
+        <section id="learn" class="section">
+            <h2 class="section-title">What is the Creighton Model?</h2>
+            <p class="section-lede">Developed by physicians at Saint Louis University and the Pope Paul VI
+                Institute, the Creighton Model FertilityCare System (CrMS) is a standardized way of observing
+                and recording the biological markers of a woman's cycle. It's purely observational —
+                <strong>no devices, no temperature-taking, no internal exams</strong> — and it can be used both
+                to achieve and to avoid pregnancy, as well as to monitor health.</p>
+
+            <div class="cards">
+                <article class="info-card">
+                    <span class="info-icon">🔬</span>
+                    <h3>Standardized observation</h3>
+                    <p>Each day you note the most fertile sign you observed — bleeding or cervical mucus —
+                        using a precise, validated vocabulary so your chart means the same thing to you and
+                        to a trained practitioner.</p>
+                </article>
+                <article class="info-card">
+                    <span class="info-icon">🌿</span>
+                    <h3>Natural &amp; non-invasive</h3>
+                    <p>Observations are made externally while using the restroom. There's nothing to wear,
+                        insert, or measure — just your own body's signs, recorded once at the end of each day.</p>
+                </article>
+                <article class="info-card">
+                    <span class="info-icon">💑</span>
+                    <h3>For planning &amp; health</h3>
+                    <p>Couples use it to identify the fertile window — to conceive or to space pregnancies.
+                        Doctors use the same chart to spot and treat underlying health issues.</p>
+                </article>
+            </div>
+        </section>
+
+        <!-- How it works -->
+        <section class="section section-alt">
+            <h2 class="section-title">How charting works</h2>
+            <ol class="steps">
+                <li>
+                    <span class="step-num">1</span>
+                    <div>
+                        <h3>Observe</h3>
+                        <p>Each time you use the restroom, observe the sensation as you wipe and look at any
+                            discharge on the tissue. Pay attention to whether it feels dry, damp, or
+                            lubricative, and whether mucus is cloudy, clear, or stretchy.</p>
+                    </div>
+                </li>
+                <li>
+                    <span class="step-num">2</span>
+                    <div>
+                        <h3>Record</h3>
+                        <p>At the end of the day, record the <em>most fertile</em> sign you saw. Vita Nova turns
+                            your selections into the official Creighton code — for example <code>8KLx2</code>
+                            (tacky, clear, lubricative, seen twice).</p>
+                    </div>
+                </li>
+                <li>
+                    <span class="step-num">3</span>
+                    <div>
+                        <h3>Interpret</h3>
+                        <p>A colored sticker is placed on each day automatically: red for bleeding, green for
+                            dry days, and a white baby sticker for the fertile days when conception is possible.</p>
+                    </div>
+                </li>
+                <li>
+                    <span class="step-num">4</span>
+                    <div>
+                        <h3>Find your Peak</h3>
+                        <p>The <strong>Peak Day</strong> is the last day of clear, stretchy, or lubricative
+                            mucus. Mark it and Vita Nova counts the three days after it — the close of your
+                            fertile window.</p>
+                    </div>
+                </li>
+            </ol>
+        </section>
+
+        <!-- Health benefits -->
+        <section id="benefits" class="section">
+            <h2 class="section-title">Health benefits</h2>
+            <p class="section-lede">The Creighton chart is more than a planning tool — it's a window into your
+                overall health. Because it tracks real biological markers cycle after cycle, patterns in your
+                chart can reveal underlying conditions and help your doctor treat the cause, not just the
+                symptoms (an approach known as NaProTECHNOLOGY).</p>
+            <div class="benefit-grid">
+                <div class="benefit"><span>🩺</span><div><strong>Identify health issues</strong><p>Irregular bleeding, unusual mucus patterns, and short cycles can flag hormonal imbalances, PCOS, endometriosis, or thyroid problems.</p></div></div>
+                <div class="benefit"><span>🤰</span><div><strong>Achieve pregnancy</strong><p>Knowing your most fertile days greatly improves the chances of conceiving — and helps couples facing infertility find answers.</p></div></div>
+                <div class="benefit"><span>🗓️</span><div><strong>Space pregnancies naturally</strong><p>Used correctly to avoid pregnancy, the method is highly effective — with no drugs, hormones, or side effects.</p></div></div>
+                <div class="benefit"><span>💗</span><div><strong>Body literacy</strong><p>Charting builds a deep, lasting understanding of your own cycle and what is normal <em>for you</em>.</p></div></div>
+                <div class="benefit"><span>🔁</span><div><strong>Track treatment</strong><p>When working with a doctor, your chart shows whether a treatment is actually restoring a healthy cycle.</p></div></div>
+                <div class="benefit"><span>🧘‍♀️</span><div><strong>Peace of mind</strong><p>A clear, daily record replaces guesswork with confidence — for you and your partner together.</p></div></div>
+            </div>
+        </section>
+
+        <!-- The rules -->
+        <section id="rules" class="section section-alt">
+            <h2 class="section-title">The rules, in plain language</h2>
+            <p class="section-lede">Vita Nova follows the standardized Creighton conventions. Here's the key.</p>
+
+            <div class="rule-block">
+                <h3>The stickers</h3>
+                <div class="legend-grid wide">
+                    <div class="legend-item"><span class="sticker sticker-red"></span><span><strong>Red</strong> — a day of menstrual bleeding.</span></div>
+                    <div class="legend-item"><span class="sticker sticker-green"></span><span><strong>Green</strong> — a dry day. A time of infertility.</span></div>
+                    <div class="legend-item"><span class="sticker sticker-white-baby">👶</span><span><strong>White baby</strong> — mucus is present. A potentially fertile day; conception is possible.</span></div>
+                    <div class="legend-item"><span class="sticker sticker-green-baby">👶</span><span><strong>Green baby</strong> — discharge appearing during the infertile phase after Peak.</span></div>
+                    <div class="legend-item"><span class="sticker sticker-yellow"></span><span><strong>Yellow</strong> — used in special situations (breastfeeding, pre-menopause) under a practitioner's guidance.</span></div>
+                    <div class="legend-item"><span class="badge-peak">P</span><span><strong>Peak &amp; count</strong> — Peak Day, then 1·2·3. These four days are always fertile.</span></div>
                 </div>
             </div>
 
-            <div class="info-section">
-                <h3>What is the Creighton Model?</h3>
-                <div class="info-cards">
-                    <div class="card">
-                        <span class="icon">🩸</span>
-                        <h4>Biological Markers</h4>
-                        <p>Standardized observation of mucus and bleeding patterns to monitor health.</p>
-                    </div>
-                    <div class="card">
-                        <span class="icon">👶</span>
-                        <h4>Natural Family Planning</h4>
-                        <p>Used to achieve or avoid pregnancy with high effectiveness.</p>
-                    </div>
-                    <div class="card">
-                        <span class="icon">👩‍⚕️</span>
-                        <h4>Women's Health</h4>
-                        <p>Helps identify abnormalities and treat underlying health issues.</p>
-                    </div>
+            <div class="rule-columns">
+                <div class="rule-block">
+                    <h3>The VDRS code</h3>
+                    <p>Every observation becomes a short code: a <strong>category number</strong>, optional
+                        <strong>descriptor letters</strong>, and a <strong>frequency</strong>.</p>
+                    <table class="code-table">
+                        <tr><td><code>0</code></td><td>Dry — nothing seen or felt</td></tr>
+                        <tr><td><code>2 / 2W</code></td><td>Damp, moist, or wet — <em>without</em> lubrication</td></tr>
+                        <tr><td><code>4</code></td><td>Damp/moist/wet — <em>with</em> lubrication</td></tr>
+                        <tr><td><code>6</code></td><td>Sticky / pasty (¼″ stretch)</td></tr>
+                        <tr><td><code>8</code></td><td>Tacky / gummy (½–¾″ stretch)</td></tr>
+                        <tr><td><code>10</code></td><td>Stretchy, 1″ or more</td></tr>
+                        <tr><td><code>10DL/SL/WL</code></td><td>Dry / shiny / wet — with lubrication</td></tr>
+                    </table>
+                </div>
+                <div class="rule-block">
+                    <h3>Descriptors &amp; frequency</h3>
+                    <table class="code-table">
+                        <tr><td><code>B</code></td><td>Brown or black</td></tr>
+                        <tr><td><code>C</code></td><td>Cloudy (white)</td></tr>
+                        <tr><td><code>K</code></td><td>Clear</td></tr>
+                        <tr><td><code>C/K</code></td><td>Cloudy/clear</td></tr>
+                        <tr><td><code>L</code></td><td>Lubricative</td></tr>
+                        <tr><td><code>G</code></td><td>Gummy</td></tr>
+                        <tr><td><code>P</code></td><td>Pasty</td></tr>
+                        <tr><td><code>Y</code></td><td>Yellow</td></tr>
+                        <tr><td><code>×1 ×2 ×3</code></td><td>Seen once / twice / three times</td></tr>
+                        <tr><td><code>AD</code></td><td>Observed all day</td></tr>
+                    </table>
                 </div>
             </div>
-        </div>
+            <p class="disclaimer">Vita Nova is an educational charting aid and is not affiliated with or endorsed by
+                the Pope Paul VI Institute or Creighton University. For family-planning decisions, learning the
+                method properly with a certified FertilityCare Practitioner is strongly recommended. This app does
+                not provide medical advice.</p>
+        </section>
 
-        <!-- Auth Container -->
-        <div id="auth-container" class="hidden">
-            <div class="auth-box" id="login-box">
-                <h2>Welcome Back</h2>
-                <p>Please login to view your charts</p>
-                <form id="login-form">
-                    <input type="email" id="login-email" placeholder="Email" required>
-                    <input type="password" id="login-password" placeholder="Password" required>
-                    <button type="submit" class="btn-primary">Login</button>
-                </form>
-                <button id="show-signup" class="btn-secondary">New here? Create an account</button>
-            </div>
+        <!-- CTA -->
+        <section class="cta">
+            <h2>Ready to begin?</h2>
+            <p>Start your first chart in seconds — no sign-up needed.</p>
+            <a href="chart.html" class="btn btn-primary btn-lg">Open my chart</a>
+        </section>
+    </main>
 
-            <div class="auth-box hidden" id="signup-box">
-                <h2>Create Account</h2>
-                <p>Join us to start charting</p>
-                <form id="signup-form">
-                    <input type="email" id="signup-email" placeholder="Email" required>
-                    <input type="password" id="signup-password" placeholder="Password" required>
-                    <button type="submit" class="btn-primary">Sign Up</button>
-                </form>
-                <button id="show-login" class="btn-secondary">Already have an account? Login</button>
-            </div>
-        </div>
-
-        <!-- App Container (Hidden until logged in) -->
-        <div id="app-container" class="hidden">
-            <div class="toolbar">
-                <h3>Observation Stamps</h3>
-
-                <div class="stamp-category">
-                    <h4>Quick Stamps</h4>
-                    <div class="stamp-group">
-                        <div class="stamp sticker-red-bg" draggable="true" data-stamp="RED" title="Red sticker">🩸</div>
-                        <div class="stamp sticker-green-bg" draggable="true" data-stamp="GREEN" title="Green sticker">Dry</div>
-                        <div class="stamp sticker-white-bg" draggable="true" data-stamp="WHITE" title="White sticker">👶</div>
-                        <div class="stamp sticker-greenbaby-bg" draggable="true" data-stamp="GREEN_BABY" title="Green baby sticker">👶</div>
-                    </div>
-                </div>
-
-                <div class="stamp-category">
-                    <h4>Bleeding</h4>
-                    <div class="stamp-group">
-                        <div class="stamp bleeding-heavy" draggable="true" data-stamp="H" title="Heavy bleeding">H</div>
-                        <div class="stamp bleeding-moderate" draggable="true" data-stamp="M" title="Moderate bleeding">M</div>
-                        <div class="stamp bleeding-light" draggable="true" data-stamp="L" title="Light bleeding">L</div>
-                        <div class="stamp bleeding-verylight" draggable="true" data-stamp="VL" title="Very light bleeding">VL</div>
-                        <div class="stamp bleeding-brown" draggable="true" data-stamp="B" title="Brown bleeding">B</div>
-                    </div>
-                </div>
-
-                <div class="stamp-category">
-                    <h4>Mucus Consistency</h4>
-                    <div class="stamp-group">
-                        <div class="stamp" draggable="true" data-stamp="T" title="Tacky">T</div>
-                        <div class="stamp" draggable="true" data-stamp="S" title="Stretchy">S</div>
-                        <div class="stamp" draggable="true" data-stamp="P" title="Pasty">P</div>
-                        <div class="stamp" draggable="true" data-stamp="G" title="Gummy">G</div>
-                    </div>
-                </div>
-
-                <div class="stamp-category">
-                    <h4>Sensation</h4>
-                    <div class="stamp-group">
-                        <div class="stamp sensation-dry" draggable="true" data-stamp="D" title="Dry">D</div>
-                        <div class="stamp sensation-damp" draggable="true" data-stamp="Dp" title="Damp">Dp</div>
-                        <div class="stamp sensation-wet" draggable="true" data-stamp="W" title="Wet">W</div>
-                        <div class="stamp sensation-shiny" draggable="true" data-stamp="Sh" title="Shiny">Sh</div>
-                        <div class="stamp sensation-slippery" draggable="true" data-stamp="Sl" title="Slippery">Sl</div>
-                        <div class="stamp sensation-lubricative" draggable="true" data-stamp="L" title="Lubricative">L</div>
-                    </div>
-                </div>
-
-                <div class="stamp-category">
-                    <h4>Quick Stamps</h4>
-                    <div class="stamp-group">
-                        <div class="stamp sticker-red-bg" draggable="true" data-stamp="RED" title="Red sticker">🔴</div>
-                        <div class="stamp sticker-green-bg" draggable="true" data-stamp="GREEN" title="Green sticker">🟢</div>
-                        <div class="stamp sticker-white-bg" draggable="true" data-stamp="WHITE" title="White sticker">👶</div>
-                        <div class="stamp sticker-greenbaby-bg" draggable="true" data-stamp="GREEN_BABY" title="Green baby sticker">👶</div>
-                    </div>
-                </div>
-
-                <div class="stamp-category">
-                    <h4>Special</h4>
-                    <div class="stamp-group">
-                        <div class="stamp peak-stamp" draggable="true" data-stamp="PEAK" title="Peak day">PEAK</div>
-                        <div class="stamp" draggable="true" data-stamp="x1" title="Count of 1">+1</div>
-                        <div class="stamp" draggable="true" data-stamp="x2" title="Count of 2">+2</div>
-                        <div class="stamp" draggable="true" data-stamp="x3" title="Count of 3">+3</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="chart-area">
-                <div class="chart-header">
-                    <h3>Your Chart</h3>
-                    <div class="view-options">
-                        <button id="day-view-btn" class="btn-view-option">Day</button>
-                        <button id="week-view-btn" class="btn-view-option active">Week</button>
-                        <button id="month-view-btn" class="btn-view-option">Month</button>
-                    </div>
-                </div>
-                <div id="chart-grid" class="chart-grid">
-                    <!-- Grid items will be generated here -->
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Firebase Scripts (compat version for simplicity or modular? using modular is modern standard but CDN invites compat usually. Let's use modules) -->
-    <script type="module" src="js/firebase-config.js"></script>
-    <script type="module" src="js/auth.js"></script>
-    <script type="module" src="js/app.js"></script>
+    <footer class="site-footer">
+        <p><span class="logo-mark">🌸</span> Vita Nova Charting</p>
+        <p class="muted small">Made with care. Your data stays on your device unless you choose to sync.</p>
+    </footer>
 
 </body>
 

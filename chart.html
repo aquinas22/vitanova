@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Chart · Vita Nova</title>
+    <meta name="description" content="Chart your cycle with the Creighton Model FertilityCare System.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body class="app-page">
+
+    <header class="site-header">
+        <a class="logo" href="index.html"><span class="logo-mark">🌸</span> Vita Nova</a>
+        <nav class="site-nav">
+            <a href="index.html">Home</a>
+            <a href="index.html#learn">Learn</a>
+            <button id="sync-btn" class="btn btn-ghost btn-sm">Sign in to sync</button>
+        </nav>
+    </header>
+
+    <main class="chart-page">
+
+        <!-- Cycle bar -->
+        <section class="cycle-bar">
+            <div class="cycle-bar-left">
+                <label class="field-inline">
+                    <span>Cycle</span>
+                    <select id="cycle-select"></select>
+                </label>
+                <label class="field-inline">
+                    <span>Start date</span>
+                    <input type="date" id="cycle-start">
+                </label>
+            </div>
+            <div class="cycle-bar-right">
+                <button id="add-cycle" class="btn btn-outline btn-sm">+ New cycle</button>
+                <button id="cycle-menu-btn" class="btn btn-ghost btn-sm" aria-haspopup="true" title="More actions">⋯</button>
+                <div id="cycle-menu" class="menu hidden" role="menu">
+                    <button data-action="export" role="menuitem">Export data (JSON)</button>
+                    <button data-action="import" role="menuitem">Import data…</button>
+                    <button data-action="delete-cycle" role="menuitem">Delete this cycle</button>
+                    <button data-action="reset" role="menuitem" class="danger">Reset everything</button>
+                </div>
+                <input type="file" id="import-file" accept="application/json" class="hidden">
+            </div>
+        </section>
+
+        <!-- Cycle summary -->
+        <section id="cycle-summary" class="cycle-summary"></section>
+
+        <!-- The chart strip -->
+        <section class="chart-scroll">
+            <div id="chart-strip" class="chart-strip"></div>
+        </section>
+
+        <!-- Legend -->
+        <section class="legend">
+            <h2 class="legend-title">Sticker key</h2>
+            <div class="legend-grid">
+                <div class="legend-item"><span class="sticker sticker-red"></span> <span><strong>Red</strong> — menstrual bleeding</span></div>
+                <div class="legend-item"><span class="sticker sticker-green"></span> <span><strong>Green</strong> — dry day, infertile</span></div>
+                <div class="legend-item"><span class="sticker sticker-white-baby">👶</span> <span><strong>White baby</strong> — mucus / fertile</span></div>
+                <div class="legend-item"><span class="sticker sticker-green-baby">👶</span> <span><strong>Green baby</strong> — discharge during post-Peak infertility</span></div>
+                <div class="legend-item"><span class="sticker sticker-yellow"></span> <span><strong>Yellow</strong> — special-circumstance day</span></div>
+                <div class="legend-item"><span class="badge-peak">P</span> <span><strong>Peak</strong> + count <strong>1·2·3</strong> — the fertile window</span></div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Observation entry modal -->
+    <div id="entry-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="entry-title">
+        <div class="modal">
+            <button id="entry-close" class="modal-close" aria-label="Close">×</button>
+            <h2 id="entry-title" class="modal-title">Day 1</h2>
+
+            <div class="entry-preview">
+                <div id="preview-sticker" class="sticker sticker-lg sticker-none"></div>
+                <div class="entry-preview-text">
+                    <div id="preview-code" class="preview-code">No observation</div>
+                    <div id="preview-interp" class="preview-interp"></div>
+                </div>
+            </div>
+
+            <!-- What kind of day -->
+            <div class="entry-section">
+                <div class="seg-control" id="day-type">
+                    <button data-type="dry" class="seg active">Dry</button>
+                    <button data-type="mucus" class="seg">Mucus / discharge</button>
+                    <button data-type="bleeding" class="seg">Bleeding</button>
+                </div>
+            </div>
+
+            <!-- Bleeding options -->
+            <div class="entry-section hidden" id="section-bleeding">
+                <h3 class="entry-label">Flow</h3>
+                <div class="chip-row" id="flow-chips"></div>
+            </div>
+
+            <!-- Mucus options -->
+            <div class="entry-section hidden" id="section-mucus">
+                <h3 class="entry-label">Category — most fertile sign of the day</h3>
+                <div class="chip-row chip-col" id="category-chips"></div>
+
+                <h3 class="entry-label">Color &amp; quality <span class="entry-hint">(choose any that apply)</span></h3>
+                <div class="chip-row" id="descriptor-chips"></div>
+
+                <h3 class="entry-label">How often today</h3>
+                <div class="chip-row" id="frequency-chips"></div>
+            </div>
+
+            <!-- Always-available toggles -->
+            <div class="entry-section entry-toggles">
+                <label class="check"><input type="checkbox" id="peak-check"> <span>⭐ Peak Day <span class="entry-hint">(last day of fertile-type mucus)</span></span></label>
+                <label class="check"><input type="checkbox" id="intercourse-check"> <span>Intercourse (I)</span></label>
+            </div>
+
+            <div class="entry-section">
+                <h3 class="entry-label">Notes</h3>
+                <textarea id="notes-input" rows="2" placeholder="Anything else you noticed…"></textarea>
+            </div>
+
+            <div class="modal-actions">
+                <button id="entry-clear" class="btn btn-ghost">Clear day</button>
+                <div class="modal-actions-right">
+                    <button id="entry-cancel" class="btn btn-outline">Cancel</button>
+                    <button id="entry-save" class="btn btn-primary">Save day</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sign-in modal -->
+    <div id="auth-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="auth-title">
+        <div class="modal modal-narrow">
+            <button id="auth-close" class="modal-close" aria-label="Close">×</button>
+            <h2 id="auth-title" class="modal-title">Sync across devices</h2>
+            <p class="muted small">Your chart is always saved on this device. Sign in only if you'd like it backed up and available on your phone and computer.</p>
+
+            <button id="google-signin" class="btn btn-outline btn-block">Continue with Google</button>
+            <div class="divider"><span>or</span></div>
+
+            <form id="auth-form">
+                <input type="email" id="auth-email" placeholder="Email" autocomplete="email" required>
+                <input type="password" id="auth-password" placeholder="Password" autocomplete="current-password" required>
+                <button type="submit" class="btn btn-primary btn-block">Sign in</button>
+            </form>
+            <button id="auth-toggle" class="link-btn">New here? Create an account</button>
+            <p id="auth-error" class="auth-error"></p>
+        </div>
+    </div>
+
+    <div id="toast" class="toast hidden"></div>
+
+    <script src="js/creighton.js"></script>
+    <script src="js/store.js"></script>
+    <script src="js/chart-app.js"></script>
+</body>
+
+</html>
