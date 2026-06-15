@@ -1,13 +1,13 @@
 /* ==========================================================================
-   chart-app.js — UI controller for the Creighton chart
+   chart-app.js — UI controller for the fertility chart
    --------------------------------------------------------------------------
    Renders cycles as a strip of day cells, drives the observation-entry modal,
-   and wires optional cloud sign-in. Depends on `Creighton` and `Store`.
+   and wires optional cloud sign-in. Depends on `Charting` and `Store`.
    ========================================================================== */
 (function () {
     'use strict';
 
-    const C = window.Creighton;
+    const C = window.Charting;
     const Store = window.Store;
 
     // --- App state (which cycle / day is in view) -------------------------
@@ -93,6 +93,7 @@
                     stickerInner(sticker, label) +
                 '</span>' +
                 '<span class="day-code">' + (code ? escapeHtml(code) : '') + '</span>' +
+                (day.day === 7 ? '<span class="day-bse" title="Day 7 — best day for a breast self-exam">BSE</span>' : '') +
                 (day.intercourse ? '<span class="day-i" title="Intercourse">I</span>' : '');
 
             cell.addEventListener('click', function () { openEntry(i); });
@@ -107,6 +108,7 @@
         const parts = [];
         parts.push(stat(s.recordedDays, 'days recorded'));
         parts.push(stat(s.peakDay ? 'Day ' + s.peakDay : '—', 'Peak Day'));
+        parts.push(stat(s.daysPastPeak != null ? s.daysPastPeak : '—', 'days past Peak'));
         parts.push(stat(s.fertileWindowEnd ? 'through Day ' + s.fertileWindowEnd : '—', 'fertile window ends'));
         summaryEl.innerHTML = parts.join('');
     }
@@ -139,16 +141,16 @@
 
         $('entry-title').textContent = 'Day ' + day.day;
         buildChips();
-        // Determine initial day-type.
-        let type = 'dry';
-        if (draft.flow) type = 'bleeding';
-        else if (draft.observation) type = 'mucus';
-        setDayType(type, true);
+
+        // Day 7 is the optimal day for a breast self-exam.
+        $('bse-reminder').classList.toggle('hidden', day.day !== 7);
 
         $('peak-check').checked = draft.peak;
         $('intercourse-check').checked = draft.intercourse;
         $('notes-input').value = draft.notes;
 
+        syncChipStates();
+        updateSections();
         updatePreview();
         modal.classList.remove('hidden');
         document.body.classList.add('modal-open');
@@ -161,14 +163,21 @@
         draft = null;
     }
 
-    // Build the chip selectors from the Creighton reference data (once values
-    // may change per open, but options are static — rebuild keeps it simple).
+    // Quick note tags to make symptom-tracking easy (PMS, cramps, etc.).
+    const NOTE_TIPS = [
+        'Cramps', 'Pain level', 'Breast tenderness', 'Headache',
+        'Fatigue', 'Bloating', 'Mood / PMS', 'Other'
+    ];
+
     let chipsBuilt = false;
     function buildChips() {
         if (chipsBuilt) return;
-        $('flow-chips').innerHTML = C.FLOW.map(function (f) {
-            return chip('flow', f.code, f.code + ' · ' + f.label.replace(' bleeding', ''));
-        }).join('');
+        // A leading "None" chip makes "no bleeding" an explicit, one-tap choice.
+        $('flow-chips').innerHTML =
+            chip('flow', '', 'None') +
+            C.FLOW.map(function (f) {
+                return chip('flow', f.code, f.code + ' · ' + f.label.replace(' bleeding', ''));
+            }).join('');
         $('category-chips').innerHTML = C.CATEGORY.map(function (c) {
             return chip('category', c.code, '<strong>' + c.code + '</strong> ' + c.label);
         }).join('');
@@ -178,12 +187,27 @@
         $('frequency-chips').innerHTML = C.FREQUENCY.map(function (f) {
             return chip('frequency', f.code, f.code.replace('X', '×') + ' · ' + f.label);
         }).join('');
+        $('note-tip-chips').innerHTML = NOTE_TIPS.map(function (t) {
+            return '<button type="button" class="chip chip-note" data-tip="' + escapeHtml(t) + '">' + escapeHtml(t) + '</button>';
+        }).join('');
+        $('note-tip-chips').addEventListener('click', onNoteTipClick);
 
-        // Delegate chip clicks.
-        modal.querySelectorAll('.chip-row').forEach(function (row) {
-            row.addEventListener('click', onChipClick);
+        // Delegate chip clicks for the observation chips.
+        ['flow-chips', 'category-chips', 'descriptor-chips', 'frequency-chips'].forEach(function (id) {
+            $(id).addEventListener('click', onChipClick);
         });
         chipsBuilt = true;
+    }
+
+    // Append a symptom tag to the notes field as a quick prompt.
+    function onNoteTipClick(e) {
+        const btn = e.target.closest('.chip-note');
+        if (!btn) return;
+        const tip = btn.dataset.tip;
+        const ta = $('notes-input');
+        const cur = ta.value.trim();
+        ta.value = (cur ? cur + ', ' : '') + tip + ': ';
+        ta.focus();
     }
 
     function chip(group, value, html) {
@@ -193,15 +217,20 @@
 
     function onChipClick(e) {
         const btn = e.target.closest('.chip');
-        if (!btn) return;
+        if (!btn || btn.disabled) return;
         const group = btn.dataset.group;
         const value = btn.dataset.value;
 
         if (group === 'flow') {
-            draft.flow = (draft.flow === value) ? null : value;
+            // '' is the explicit "None" choice.
+            draft.flow = value || null;
         } else if (group === 'category') {
             ensureObs();
             draft.observation.category = (draft.observation.category === value) ? null : value;
+            // Leaving a mucus category drops descriptors that no longer apply.
+            if (!categoryAllowsDescriptors(draft.observation.category)) {
+                draft.observation.descriptors = [];
+            }
         } else if (group === 'descriptor') {
             ensureObs();
             const arr = draft.observation.descriptors;
@@ -212,6 +241,7 @@
             draft.observation.frequency = (draft.observation.frequency === value) ? null : value;
         }
         syncChipStates();
+        updateSections();
         updatePreview();
     }
 
@@ -221,36 +251,49 @@
         }
     }
 
+    // Descriptors describe mucus, so a "0" (nothing seen) day can never carry
+    // one — this is what makes e.g. "0 Yellow" impossible.
+    function categoryAllowsDescriptors(cat) {
+        return !!cat && cat !== '0';
+    }
+
     function syncChipStates() {
         modal.querySelectorAll('.chip').forEach(function (btn) {
             const group = btn.dataset.group;
             const value = btn.dataset.value;
             let on = false;
-            if (group === 'flow') on = draft.flow === value;
+            if (group === 'flow') on = (draft.flow || '') === value;
             else if (draft.observation) {
                 if (group === 'category') on = draft.observation.category === value;
                 else if (group === 'descriptor') on = draft.observation.descriptors.indexOf(value) !== -1;
                 else if (group === 'frequency') on = draft.observation.frequency === value;
             }
             btn.classList.toggle('selected', on);
+
+            // Lubricative can't apply to a without-lubrication category.
+            if (group === 'descriptor' && value === 'L') {
+                const cat = draft.observation && draft.observation.category;
+                const blocked = C.DRY_CATEGORIES.indexOf(cat) !== -1;
+                btn.disabled = blocked;
+                btn.classList.toggle('chip-disabled', blocked);
+            }
         });
     }
 
-    function setDayType(type, skipClear) {
-        modal.querySelectorAll('#day-type .seg').forEach(function (b) {
-            b.classList.toggle('active', b.dataset.type === type);
-        });
-        $('section-bleeding').classList.toggle('hidden', type !== 'bleeding');
-        $('section-mucus').classList.toggle('hidden', type !== 'mucus');
+    // Show/hide observation parts based on the current bleeding + category, so
+    // charting is one continuous flow rather than separate tabs.
+    function updateSections() {
+        const heavy = draft.flow === 'H' || draft.flow === 'M';
+        const light = !!draft.flow && !heavy; // L / VL / B
 
-        if (!skipClear) {
-            // Switching type clears the other branch's data.
-            if (type === 'dry') { draft.flow = null; draft.observation = null; }
-            else if (type === 'bleeding') { draft.observation = null; }
-            else if (type === 'mucus') { draft.flow = null; ensureObs(); }
-        }
-        syncChipStates();
-        updatePreview();
+        // Heavy/moderate bleeding fully obscures any mucus observation.
+        $('section-observation').classList.toggle('hidden', heavy);
+        $('light-flow-note').classList.toggle('hidden', !light);
+        if (heavy && draft.observation) draft.observation = null;
+
+        const cat = draft.observation && draft.observation.category;
+        const showDetail = categoryAllowsDescriptors(cat);
+        $('mucus-detail').classList.toggle('hidden', !showDetail);
     }
 
     function updatePreview() {
@@ -278,6 +321,13 @@
         draft.peak = $('peak-check').checked;
         draft.intercourse = $('intercourse-check').checked;
         draft.notes = $('notes-input').value.trim();
+
+        // Reject physically-impossible combinations (e.g. "0 Yellow").
+        const check = C.validateDraft(draft);
+        if (!check.ok) {
+            toast(check.message);
+            return;
+        }
 
         // A single Peak day per cycle — clear any other peak when setting one.
         if (draft.peak) {
@@ -314,6 +364,11 @@
             render();
             toast('New cycle added');
         });
+        $('extend-cycle').addEventListener('click', function () {
+            Store.extendCycle(activeCycle, 7);
+            render();
+            toast('Added 7 more days');
+        });
 
         const menu = $('cycle-menu');
         $('cycle-menu-btn').addEventListener('click', function (e) {
@@ -348,7 +403,9 @@
     }
 
     function handleMenuAction(action) {
-        if (action === 'export') {
+        if (action === 'print') {
+            printChart();
+        } else if (action === 'export') {
             const blob = new Blob([Store.exportJSON()], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -373,6 +430,83 @@
                 toast('Everything reset');
             }
         }
+    }
+
+    /* ======================================================================
+       Print / Export to PDF — a standard charting-style chart row.
+       Uses the browser's print dialog ("Save as PDF"), so no libraries are
+       needed and it works fully offline.
+       ====================================================================== */
+    function dayDate(startDate, offset) {
+        if (!startDate) return '';
+        const d = new Date(startDate + 'T00:00:00');
+        d.setDate(d.getDate() + offset);
+        return (d.getMonth() + 1) + '/' + d.getDate();
+    }
+
+    function printChart() {
+        const cycle = Store.getCycle(activeCycle);
+        if (!cycle) return;
+        const days = cycle.days;
+        const peakIndex = C.findPeakIndex(days);
+        const s = C.summarizeCycle(days);
+
+        const cells = days.map(function (day, i) {
+            const sticker = C.getSticker(day, i, days);
+            const label = C.peakLabel(i, peakIndex);
+            const code = C.buildCode(day);
+            return '' +
+                '<td class="pc-cell">' +
+                    '<div class="pc-daynum">' + day.day + '</div>' +
+                    '<div class="pc-date">' + escapeHtml(dayDate(cycle.startDate, i)) + '</div>' +
+                    '<div class="pc-sticker sticker ' + STICKER_CLASS[sticker] + '">' + stickerInner(sticker, label) + '</div>' +
+                    '<div class="pc-code">' + (code ? escapeHtml(code) : '') + '</div>' +
+                    '<div class="pc-i">' + (day.intercourse ? 'I' : '') + '</div>' +
+                '</td>';
+        });
+
+        // Lay the cells out in rows of 35 so a long cycle wraps onto a page.
+        const PER_ROW = 35;
+        let rows = '';
+        for (let r = 0; r < cells.length; r += PER_ROW) {
+            rows += '<table class="pc-row"><tr>' + cells.slice(r, r + PER_ROW).join('') + '</tr></table>';
+        }
+
+        const container = document.createElement('div');
+        container.id = 'print-area';
+        container.innerHTML =
+            '<div class="pc-head">' +
+                '<h1>🌸 Vita Nova — Fertility Chart</h1>' +
+                '<div class="pc-meta">' +
+                    '<span><strong>' + escapeHtml(cycle.name) + '</strong></span>' +
+                    (cycle.startDate ? '<span>Start: ' + escapeHtml(cycle.startDate) + '</span>' : '') +
+                    (s.peakDay ? '<span>Peak: Day ' + s.peakDay + '</span>' : '') +
+                    '<span>Length: ' + s.cycleLength + ' days</span>' +
+                '</div>' +
+            '</div>' +
+            rows +
+            '<div class="pc-notes"><h2>Daily notes</h2>' +
+                days.filter(function (d) { return d.notes; }).map(function (d) {
+                    return '<div class="pc-note"><strong>Day ' + d.day + ':</strong> ' + escapeHtml(d.notes) + '</div>';
+                }).join('') +
+            '</div>' +
+            '<p class="pc-foot">Educational charting aid — not medical advice.</p>';
+
+        const prev = $('print-area');
+        if (prev) prev.remove();
+        document.body.appendChild(container);
+        document.body.classList.add('printing');
+
+        function cleanup() {
+            document.body.classList.remove('printing');
+            const el = $('print-area');
+            if (el) el.remove();
+            window.removeEventListener('afterprint', cleanup);
+        }
+        window.addEventListener('afterprint', cleanup);
+        window.print();
+        // Fallback cleanup if afterprint never fires (some browsers).
+        setTimeout(cleanup, 1000);
     }
 
     /* ======================================================================
@@ -452,9 +586,6 @@
         });
         modal.addEventListener('click', function (e) { if (e.target === modal) closeEntry(); });
 
-        modal.querySelectorAll('#day-type .seg').forEach(function (b) {
-            b.addEventListener('click', function () { setDayType(b.dataset.type); });
-        });
         $('peak-check').addEventListener('change', updatePreview);
         $('intercourse-check').addEventListener('change', updatePreview);
 

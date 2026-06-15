@@ -1,11 +1,11 @@
 /* ==========================================================================
-   creighton.js — Domain logic for the Creighton Model FertilityCare System
+   charting.js — Domain logic for natural fertility charting
    --------------------------------------------------------------------------
-   Pure, dependency-free functions that encode the standardized rules of the
-   Creighton Model (CrMS): the Vaginal Discharge Recording System (VDRS),
+   Pure, dependency-free functions that encode a natural method of cycle
+   charting for Natural Family Planning: the discharge recording code (VDRS),
    Peak Day identification + counting, and automatic sticker assignment.
 
-   No network, no DOM. Exposed as the global `Creighton`.
+   No network, no DOM. Exposed as the global `Charting`.
    ========================================================================== */
 (function (global) {
     'use strict';
@@ -65,6 +65,14 @@
     // category alone might look dry. Used to decide white-baby vs green stickers.
     const MUCUS_DESCRIPTORS = ['C', 'C/K', 'K', 'G', 'L', 'P', 'Y'];
 
+    // Flows light enough that cervical mucus can still be observed underneath
+    // them — on these days we still ask the mucus question (and may record it).
+    const LIGHT_FLOWS = ['L', 'VL', 'B'];
+
+    // Categories that describe a NON-mucus (dry-type) day. A descriptor that
+    // implies actual mucus is therefore impossible alongside these.
+    const DRY_CATEGORIES = ['0', '2', '2W'];
+
     /* ----------------------------------------------------------------------
        Sticker types
        ---------------------------------------------------------------------- */
@@ -104,18 +112,17 @@
         return dayHasFlow(day) || !!(day && day.observation) || (day && day.peak);
     }
 
+    function flowIsLight(day) {
+        return dayHasFlow(day) && LIGHT_FLOWS.indexOf(day.flow) !== -1;
+    }
+
     /* ----------------------------------------------------------------------
        VDRS code string — what gets written on the chart line for a day.
-       e.g. "8KLx2", "10WLx3 (AD)", "VL", "H"
+       e.g. "8KLx2", "10WLx3 (AD)", "VL", "H", "L 6CKx2"
        ---------------------------------------------------------------------- */
-    function buildCode(day) {
-        if (!day) return '';
-        if (dayHasFlow(day)) {
-            return day.flow;
-        }
-        if (!day.observation) return '';
-        const o = day.observation;
-        let s = o.category || '';
+    function buildObsCode(o) {
+        if (!o || !o.category) return '';
+        let s = o.category;
         if (o.descriptors && o.descriptors.length) {
             s += o.descriptors.join('');
         }
@@ -128,13 +135,53 @@
         return s.trim();
     }
 
+    function buildCode(day) {
+        if (!day) return '';
+        if (dayHasFlow(day)) {
+            // On light/very-light/brown days mucus can still be seen, so we
+            // append any observation that was recorded alongside the bleeding.
+            const obs = buildObsCode(day.observation);
+            if (flowIsLight(day) && obs && day.observation.category !== '0') {
+                return day.flow + ' ' + obs;
+            }
+            return day.flow;
+        }
+        return buildObsCode(day.observation);
+    }
+
+    /* ----------------------------------------------------------------------
+       Validation — reject combinations that cannot physically happen, so the
+       chart stays meaningful (e.g. category "0" = nothing seen, yet a Yellow
+       descriptor would claim mucus was seen).
+       Returns { ok: true } or { ok: false, message }.
+       ---------------------------------------------------------------------- */
+    function validateDraft(draft) {
+        if (!draft) return { ok: true };
+        const o = draft.observation;
+        if (!o) return { ok: true };
+        const hasDesc = o.descriptors && o.descriptors.length;
+
+        if (!o.category && (hasDesc || o.frequency)) {
+            return { ok: false, message: 'Choose an observation category before adding color, quality, or frequency.' };
+        }
+        if (o.category === '0' && hasDesc) {
+            return { ok: false, message: 'A “0” day means nothing was seen — it can’t also have a colour/quality descriptor (e.g. “0 Yellow” is impossible).' };
+        }
+        if (DRY_CATEGORIES.indexOf(o.category) !== -1 && o.descriptors && o.descriptors.indexOf('L') !== -1) {
+            return { ok: false, message: '“Lubricative” describes mucus, so it can’t go with a without-lubrication category.' };
+        }
+        return { ok: true };
+    }
+
     /* ----------------------------------------------------------------------
        Peak Day + counting.
 
        Peak Day = the LAST day of mucus that is clear, stretchy (≥1 inch) or
        lubricative. In this app the user marks the Peak explicitly; we then
        label the following three days 1, 2, 3 (the post-Peak count). Those
-       count days remain fertile (white baby) regardless of what is observed.
+       count days are still treated as fertile: a count day with mucus is a
+       white baby, while a dry count day is a green baby (dry-looking, but
+       still counted).
        ---------------------------------------------------------------------- */
 
     // Index of the Peak day within a days array, or -1.
@@ -159,16 +206,19 @@
 
          🔴 red          → bleeding
          🟢 green         → dry / infertile
-         ⚪👶 white-baby  → mucus or a count day (1–3) → conception possible
-         🟢👶 green-baby  → mucus appearing during established post-Peak infertility
+         ⚪👶 white-baby  → mucus (incl. the Peak Day) → conception possible
+         🟢👶 green-baby  → a dry post-Peak count day (1·2·3), or mucus during
+                            established post-Peak infertility
          🟡 yellow        → manual override for special situations
 
-       Rules applied (standard CrMS, to identify the fertile window):
-         • Bleeding  ............................. red
-         • Count days P, +1, +2, +3 ............. white baby (always fertile)
-         • Any mucus before/at the fertile window white baby
-         • Mucus after Peak+3 (post-Peak phase) . green baby
-         • Dry day .............................. green
+       Rules applied (to identify the fertile window):
+         • Bleeding ............................. red
+         • Peak Day ............................ white baby
+         • Count day 1·2·3 with mucus .......... white baby
+         • Count day 1·2·3 when dry ............ green baby (dry, still counted)
+         • Mucus before the fertile window ..... white baby
+         • Mucus after Peak+3 (post-Peak) ...... green baby
+         • Dry day ............................. green
        ---------------------------------------------------------------------- */
     function getSticker(day, index, days) {
         if (!dayHasEntry(day)) return STICKER.NONE;
@@ -180,16 +230,20 @@
 
         const peakIndex = findPeakIndex(days);
         const label = peakLabel(index, peakIndex);
-
-        // Peak day and the three days that follow are always fertile.
-        if (label) return STICKER.WHITE_BABY;
-
         const hasMucus = dayHasMucus(day);
+
+        // The Peak Day is the last day of fertile mucus → always white baby.
+        if (label === 'P') return STICKER.WHITE_BABY;
+
+        // Count days 1·2·3 stay fertile: white baby if mucus is still present,
+        // otherwise a green baby — dry-looking, but still within the count.
+        if (label) return hasMucus ? STICKER.WHITE_BABY : STICKER.GREEN_BABY;
+
         if (!hasMucus) return STICKER.GREEN;
 
-        // Mucus present. If we are past the post-Peak count, this discharge
-        // occurs during established infertility → green baby. Otherwise it is
-        // part of (or building toward) the fertile window → white baby.
+        // Mucus present, outside the count. After Peak+3 it occurs during
+        // established infertility → green baby; otherwise it is part of (or
+        // building toward) the fertile window → white baby.
         if (peakIndex >= 0 && index > peakIndex + 3) {
             return STICKER.GREEN_BABY;
         }
@@ -203,13 +257,17 @@
         switch (sticker) {
             case STICKER.RED:        return 'Menstrual bleeding.';
             case STICKER.GREEN:      return 'Dry day — a time of infertility.';
-            case STICKER.GREEN_BABY: return 'Discharge during the infertile phase after Peak.';
+            case STICKER.GREEN_BABY:
+                if (label === '1' || label === '2' || label === '3') {
+                    return 'Day ' + label + ' after Peak — dry, but still counted as fertile.';
+                }
+                return 'Discharge during the infertile phase after Peak.';
             case STICKER.YELLOW:     return 'Special discharge day (yellow-stamp protocol).';
             case STICKER.YELLOW_BABY:return 'Discharge recorded during a yellow-stamp protocol.';
             case STICKER.WHITE_BABY:
                 if (label === 'P') return 'Peak Day — the last day of fertile-type mucus.';
                 if (label === '1' || label === '2' || label === '3') {
-                    return 'Day ' + label + ' after Peak — still within the fertile window.';
+                    return 'Day ' + label + ' after Peak — mucus still present, fertile.';
                 }
                 return 'Mucus present — a potentially fertile day.';
             default: return 'No observation recorded.';
@@ -223,25 +281,39 @@
         const peakIndex = findPeakIndex(days);
         const recorded = days.filter(dayHasEntry).length;
         let firstMucus = -1;
+        let lastEntry = -1;
         for (let i = 0; i < days.length; i++) {
-            if (dayHasMucus(days[i])) { firstMucus = i; break; }
+            if (dayHasMucus(days[i]) && firstMucus === -1) firstMucus = i;
+            if (dayHasEntry(days[i])) lastEntry = i;
         }
+        // Days past Peak — how far the post-Peak phase has progressed. Counted
+        // from the last day that has any entry (the furthest you've charted).
+        const daysPastPeak = (peakIndex >= 0 && lastEntry > peakIndex)
+            ? lastEntry - peakIndex
+            : null;
         return {
             peakDay: peakIndex >= 0 ? peakIndex + 1 : null,
             recordedDays: recorded,
+            cycleLength: days.length,
             firstMucusDay: firstMucus >= 0 ? firstMucus + 1 : null,
-            fertileWindowEnd: peakIndex >= 0 ? peakIndex + 4 : null // Peak + 3 (1-indexed day number)
+            fertileWindowEnd: peakIndex >= 0 ? peakIndex + 4 : null, // Peak + 3 (1-indexed day number)
+            daysPastPeak: daysPastPeak
         };
     }
 
     /* ---------------------------------------------------------------------- */
-    global.Creighton = {
+    global.Charting = {
         FLOW: FLOW,
         CATEGORY: CATEGORY,
         DESCRIPTOR: DESCRIPTOR,
         FREQUENCY: FREQUENCY,
         STICKER: STICKER,
+        LIGHT_FLOWS: LIGHT_FLOWS,
+        DRY_CATEGORIES: DRY_CATEGORIES,
         buildCode: buildCode,
+        buildObsCode: buildObsCode,
+        validateDraft: validateDraft,
+        flowIsLight: flowIsLight,
         getSticker: getSticker,
         findPeakIndex: findPeakIndex,
         peakLabel: peakLabel,

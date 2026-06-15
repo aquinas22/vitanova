@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Chart · Vita Nova</title>
-    <meta name="description" content="Chart your cycle with the Creighton Model FertilityCare System.">
+    <meta name="description" content="Chart your cycle with a natural Catholic fertility method for NFP.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -19,6 +19,7 @@
         <nav class="site-nav">
             <a href="index.html">Home</a>
             <a href="index.html#learn">Learn</a>
+            <a href="rules.html">Rules</a>
             <button id="sync-btn" class="btn btn-ghost btn-sm">Sign in to sync</button>
         </nav>
     </header>
@@ -41,6 +42,7 @@
                 <button id="add-cycle" class="btn btn-outline btn-sm">+ New cycle</button>
                 <button id="cycle-menu-btn" class="btn btn-ghost btn-sm" aria-haspopup="true" title="More actions">⋯</button>
                 <div id="cycle-menu" class="menu hidden" role="menu">
+                    <button data-action="print" role="menuitem">Export to PDF / Print chart…</button>
                     <button data-action="export" role="menuitem">Export data (JSON)</button>
                     <button data-action="import" role="menuitem">Import data…</button>
                     <button data-action="delete-cycle" role="menuitem">Delete this cycle</button>
@@ -57,15 +59,19 @@
         <section class="chart-scroll">
             <div id="chart-strip" class="chart-strip"></div>
         </section>
+        <div class="strip-tools">
+            <button id="extend-cycle" class="btn btn-outline btn-sm">+ Add 7 more days</button>
+            <span class="muted small">Cycle longer than usual? Add more days to keep charting.</span>
+        </div>
 
         <!-- Legend -->
         <section class="legend">
-            <h2 class="legend-title">Sticker key</h2>
+            <h2 class="legend-title">Sticker key — what each colour means</h2>
             <div class="legend-grid">
                 <div class="legend-item"><span class="sticker sticker-red"></span> <span><strong>Red</strong> — menstrual bleeding</span></div>
                 <div class="legend-item"><span class="sticker sticker-green"></span> <span><strong>Green</strong> — dry day, infertile</span></div>
                 <div class="legend-item"><span class="sticker sticker-white-baby">👶</span> <span><strong>White baby</strong> — mucus / fertile</span></div>
-                <div class="legend-item"><span class="sticker sticker-green-baby">👶</span> <span><strong>Green baby</strong> — discharge during post-Peak infertility</span></div>
+                <div class="legend-item"><span class="sticker sticker-green-baby">👶</span> <span><strong>Green baby</strong> — a dry post-Peak count day (1·2·3), still counted as fertile</span></div>
                 <div class="legend-item"><span class="sticker sticker-yellow"></span> <span><strong>Yellow</strong> — special-circumstance day</span></div>
                 <div class="legend-item"><span class="badge-peak">P</span> <span><strong>Peak</strong> + count <strong>1·2·3</strong> — the fertile window</span></div>
             </div>
@@ -86,42 +92,47 @@
                 </div>
             </div>
 
-            <!-- What kind of day -->
-            <div class="entry-section">
-                <div class="seg-control" id="day-type">
-                    <button data-type="dry" class="seg active">Dry</button>
-                    <button data-type="mucus" class="seg">Mucus / discharge</button>
-                    <button data-type="bleeding" class="seg">Bleeding</button>
-                </div>
+            <!-- Day 7 breast self-exam reminder (shown only on day 7) -->
+            <div id="bse-reminder" class="entry-banner hidden">
+                🌸 <strong>Day 7</strong> is the ideal day for a monthly <strong>breast self-exam (BSE)</strong> — early in the cycle, when tissue is least tender.
             </div>
 
-            <!-- Bleeding options -->
-            <div class="entry-section hidden" id="section-bleeding">
-                <h3 class="entry-label">Flow</h3>
+            <!-- Step 1 · Bleeding -->
+            <div class="entry-section">
+                <h3 class="entry-label">Any bleeding today?</h3>
                 <div class="chip-row" id="flow-chips"></div>
             </div>
 
-            <!-- Mucus options -->
-            <div class="entry-section hidden" id="section-mucus">
-                <h3 class="entry-label">Category — most fertile sign of the day</h3>
+            <!-- Step 2 · Observation (mucus / dry). Hidden while heavy/moderate
+                 bleeding makes a mucus observation impossible. -->
+            <div class="entry-section" id="section-observation">
+                <h3 class="entry-label">What did you observe? <span class="entry-hint">— record the single most fertile sign of the day</span></h3>
+                <p id="light-flow-note" class="entry-note hidden">On a light day you can often still see mucus underneath — note it here too.</p>
                 <div class="chip-row chip-col" id="category-chips"></div>
 
-                <h3 class="entry-label">Color &amp; quality <span class="entry-hint">(choose any that apply)</span></h3>
-                <div class="chip-row" id="descriptor-chips"></div>
+                <div id="mucus-detail" class="hidden">
+                    <h3 class="entry-label">Colour &amp; quality <span class="entry-hint">(choose any that apply)</span></h3>
+                    <div class="chip-row" id="descriptor-chips"></div>
 
-                <h3 class="entry-label">How often today</h3>
-                <div class="chip-row" id="frequency-chips"></div>
+                    <h3 class="entry-label">How many times today?</h3>
+                    <div class="chip-row" id="frequency-chips"></div>
+                </div>
             </div>
 
             <!-- Always-available toggles -->
             <div class="entry-section entry-toggles">
                 <label class="check"><input type="checkbox" id="peak-check"> <span>⭐ Peak Day <span class="entry-hint">(last day of fertile-type mucus)</span></span></label>
+                <p class="entry-note subtle">You usually can't be sure of your Peak until the <em>next</em> day, once the slippery mucus is gone. Come back and tick it then — every day stays editable.</p>
                 <label class="check"><input type="checkbox" id="intercourse-check"> <span>Intercourse (I)</span></label>
             </div>
 
             <div class="entry-section">
                 <h3 class="entry-label">Notes</h3>
-                <textarea id="notes-input" rows="2" placeholder="Anything else you noticed…"></textarea>
+                <textarea id="notes-input" rows="2" placeholder="Cramps, breast tenderness, headache, mood, PMS…"></textarea>
+                <div class="note-tips">
+                    <span class="note-tips-label">Add:</span>
+                    <div class="chip-row" id="note-tip-chips"></div>
+                </div>
             </div>
 
             <div class="modal-actions">
@@ -156,7 +167,7 @@
 
     <div id="toast" class="toast hidden"></div>
 
-    <script src="js/creighton.js"></script>
+    <script src="js/charting.js"></script>
     <script src="js/store.js"></script>
     <script src="js/chart-app.js"></script>
 </body>

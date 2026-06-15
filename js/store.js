@@ -285,6 +285,19 @@
             persist();
         },
 
+        // Extend a cycle by `n` more days (default 7) for longer-than-usual
+        // cycles. New days start blank.
+        extendCycle: function (cycleIndex, n) {
+            const cycle = data.cycles[cycleIndex];
+            if (!cycle) return;
+            const add = n || 7;
+            const start = cycle.days.length;
+            for (let i = 0; i < add; i++) {
+                cycle.days.push(blankDay(start + i + 1));
+            }
+            persist();
+        },
+
         addCycle: function () {
             const cycle = blankCycle(data.cycles.length + 1, null);
             data.cycles.push(cycle);

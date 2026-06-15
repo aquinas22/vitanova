@@ -1,7 +1,8 @@
 # 🌸 Vita Nova Charting
 
-A simple, beautiful web app for charting your cycle with the **Creighton Model
-FertilityCare System (CrMS)** — for natural family planning and women's health.
+A simple, beautiful web app for charting your cycle with a **natural Catholic
+method** — for Natural Family Planning (NFP), fully in line with the teaching of
+the Church, and for women's health.
 
 It's a static web app (plain HTML/CSS/JavaScript, no build step). Your chart is
 saved **locally in your browser**, so it works instantly, offline, and privately
@@ -49,8 +50,9 @@ sudo systemctl enable --now vita-nova
 | File | Purpose |
 |------|---------|
 | `index.html` | Landing page + educational content (what it is, health benefits, the rules) |
-| `chart.html` | The charting tool |
-| `js/creighton.js` | Domain logic: VDRS codes, Peak Day counting, automatic sticker assignment |
+| `rules.html` | Full rules reference: the VDRS code, stickers, and family-planning guidance |
+| `chart.html` | The charting tool (mobile-friendly; export to PDF from the ⋯ menu) |
+| `js/charting.js` | Domain logic: discharge codes, Peak Day counting, automatic sticker assignment |
 | `js/store.js` | Local-first storage + optional, lazy Firebase cloud sync |
 | `js/chart-app.js` | Chart UI controller |
 | `js/firebase-config.js` | Firebase project config (only loaded if you sign in) |
@@ -66,7 +68,7 @@ sudo systemctl enable --now vita-nova
 
 ## Disclaimer
 
-This is an educational charting aid, not medical advice, and is not affiliated
-with or endorsed by the Pope Paul VI Institute or Creighton University. To use
-the Creighton Model for family planning, learning it with a certified
-FertilityCare Practitioner is strongly recommended.
+This is an independent educational charting aid, not medical advice, and is not
+affiliated with or endorsed by any organization or method provider. To use a
+natural method for family planning, learning it with a trained instructor is
+strongly recommended.

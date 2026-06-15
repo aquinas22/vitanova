@@ -22,7 +22,7 @@
     --ink-soft: #6e6470;
     --line:     #efe3e8;
 
-    /* Sticker colors (Creighton) */
+    /* Sticker colors */
     --sticker-red:    #e63946;
     --sticker-green:  #5bbf73;
     --sticker-white:  #ffffff;
@@ -202,6 +202,60 @@ code {
 .mini-caption { text-align: center; color: var(--ink-soft); font-size: 0.9rem; margin: 18px 0 0; }
 
 /* ==========================================================================
+   Quote band (rotating reflections)
+   ========================================================================== */
+.quote-band {
+    max-width: var(--maxw);
+    margin: 0 auto;
+    padding: 28px 24px 48px;
+    text-align: center;
+}
+.quote {
+    margin: 0 auto;
+    max-width: 720px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.85), rgba(255,245,247,0.85));
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    padding: 30px 32px 26px;
+    position: relative;
+}
+.quote::before {
+    content: '\201C';
+    font-family: var(--font-head);
+    font-size: 3.4rem;
+    line-height: 0;
+    color: var(--rose-300);
+    position: absolute;
+    top: 26px; left: 18px;
+}
+.quote blockquote {
+    margin: 0 0 12px;
+    font-family: var(--font-head);
+    font-size: clamp(1.1rem, 2.4vw, 1.5rem);
+    font-weight: 500;
+    color: var(--ink);
+    line-height: 1.4;
+    transition: opacity 0.28s ease, transform 0.28s ease;
+}
+.quote figcaption {
+    color: var(--rose-600);
+    font-weight: 700;
+    font-size: 0.92rem;
+    transition: opacity 0.28s ease;
+}
+.quote figcaption cite { font-style: italic; }
+.quote.is-fading blockquote, .quote.is-fading figcaption { opacity: 0; transform: translateY(6px); }
+.quote-dots { display: flex; gap: 8px; justify-content: center; margin-top: 18px; }
+.quote-dot {
+    width: 9px; height: 9px; border-radius: 50%;
+    background: var(--rose-200); cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+.quote-dot:hover { background: var(--rose-300); }
+.quote-dot.active { background: var(--rose-500); transform: scale(1.25); }
+
+/* ==========================================================================
    Sections
    ========================================================================== */
 .section {
@@ -263,7 +317,11 @@ code {
 
 /* Rules */
 .rule-block { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 26px; box-shadow: var(--shadow-sm); margin-bottom: 24px; }
+.rule-block h2 { font-size: 1.4rem; }
 .rule-block h3 { font-size: 1.3rem; }
+.rule-list { margin: 0; padding-left: 1.2em; }
+.rule-list li { margin-bottom: 10px; color: var(--ink-soft); }
+.rule-list li strong { color: var(--ink); }
 .rule-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
 .code-table { width: 100%; border-collapse: collapse; }
 .code-table td { padding: 7px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
@@ -520,7 +578,29 @@ textarea, #notes-input {
 .divider { display: flex; align-items: center; gap: 12px; color: var(--ink-soft); margin: 16px 0; font-size: 0.85rem; }
 .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--line); }
 .auth-error { color: var(--sticker-red); font-size: 0.88rem; min-height: 1em; margin: 8px 0 0; }
-#sync-btn.synced { color: var(--sticker-green); }
+
+/* "Sign in to sync" — a cute, clearly-visible pink pill so it doesn't blend in. */
+#sync-btn {
+    background: linear-gradient(135deg, var(--rose-100), var(--rose-200));
+    color: var(--rose-600);
+    border: 2px solid var(--rose-400);
+    border-radius: 999px;
+    font-weight: 800;
+    box-shadow: none;
+    padding: 8px 18px;
+}
+#sync-btn:hover {
+    background: linear-gradient(135deg, var(--rose-200), var(--rose-300));
+    color: var(--rose-600);
+    border-color: var(--rose-500);
+    transform: translateY(-1px);
+}
+#sync-btn.synced {
+    color: #fff;
+    background: linear-gradient(135deg, var(--sticker-green), #46a35d);
+    border-color: #3f9656;
+    box-shadow: none;
+}
 
 /* Toast */
 .toast {
@@ -529,6 +609,63 @@ textarea, #notes-input {
     border-radius: 999px; box-shadow: var(--shadow-lg); z-index: 200;
     font-weight: 700; font-size: 0.92rem;
     animation: rise 0.25s ease;
+}
+
+/* Entry helpers — banners, notes, tips, disabled chips */
+.entry-banner {
+    background: var(--plum-100); border: 1px solid var(--plum-300);
+    color: var(--ink); border-radius: var(--radius-sm);
+    padding: 12px 14px; margin-bottom: 18px; font-size: 0.92rem;
+}
+.entry-note { color: var(--ink-soft); font-size: 0.86rem; margin: -2px 0 12px; }
+.entry-note.subtle { font-size: 0.82rem; margin: 2px 0 6px; padding-left: 28px; }
+.chip.chip-disabled, .chip:disabled {
+    opacity: 0.4; cursor: not-allowed; text-decoration: line-through;
+}
+.chip.chip-disabled:hover, .chip:disabled:hover { border-color: var(--rose-200); background: #fff; }
+.note-tips { display: flex; align-items: flex-start; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.note-tips-label { font-size: 0.82rem; font-weight: 700; color: var(--ink-soft); padding-top: 8px; }
+.chip-note { font-size: 0.82rem; padding: 6px 11px; }
+
+/* Strip tools (extend cycle) */
+.strip-tools { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 12px 2px 0; }
+
+/* Day 7 breast self-exam marker */
+.day-bse {
+    position: absolute; top: 4px; right: 5px;
+    font-size: 0.52rem; font-weight: 800; letter-spacing: 0.03em;
+    color: var(--plum-500); background: var(--plum-100);
+    border-radius: 5px; padding: 1px 4px;
+}
+
+/* ==========================================================================
+   Print / Export to PDF
+   ========================================================================== */
+#print-area { display: none; }
+@media print {
+    body { background: #fff !important; }
+    body.printing > *:not(#print-area) { display: none !important; }
+    #print-area {
+        display: block; color: #000;
+        -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    }
+    .pc-head h1 { font-size: 18pt; margin: 0 0 6px; }
+    .pc-meta { display: flex; gap: 18px; flex-wrap: wrap; font-size: 9pt; margin-bottom: 14px; color: #333; }
+    .pc-row { border-collapse: collapse; width: 100%; margin-bottom: 10px; table-layout: fixed; page-break-inside: avoid; }
+    .pc-cell {
+        border: 0.5pt solid #999; text-align: center; vertical-align: top;
+        padding: 3px 1px; font-size: 6.5pt; width: 2.8%;
+    }
+    .pc-daynum { font-weight: 800; }
+    .pc-date { color: #555; font-size: 5.5pt; }
+    .pc-sticker { --size: 16px; margin: 2px auto; box-shadow: none; border-width: 1px; }
+    .pc-sticker .sticker-count { font-size: 6pt; box-shadow: none; }
+    .pc-code { font-weight: 700; word-break: break-all; min-height: 1em; }
+    .pc-i { color: #6a4a8a; font-weight: 800; min-height: 0.9em; }
+    .pc-notes { margin-top: 16px; page-break-inside: avoid; }
+    .pc-notes h2 { font-size: 11pt; margin: 0 0 6px; }
+    .pc-note { font-size: 8.5pt; margin-bottom: 3px; }
+    .pc-foot { margin-top: 18px; font-size: 7.5pt; color: #666; font-style: italic; }
 }
 
 /* Utilities */
@@ -548,14 +685,90 @@ textarea, #notes-input {
     .rule-columns { grid-template-columns: 1fr; }
     .legend-grid, .legend-grid.wide { grid-template-columns: 1fr; }
 }
+@media (max-width: 720px) {
+    /* Let the header wrap instead of crushing the nav on phones. */
+    .site-header { flex-wrap: wrap; gap: 10px 16px; padding: 14px 18px; }
+    .site-nav { gap: 14px; flex-wrap: wrap; font-size: 0.95rem; }
+
+    /* Cycle bar stacks cleanly; controls go full width and tap-friendly. */
+    .cycle-bar { flex-direction: column; align-items: stretch; }
+    .cycle-bar-left { flex-direction: column; gap: 12px; }
+    .cycle-bar-right { justify-content: space-between; }
+    .field-inline { justify-content: space-between; }
+    .field-inline select, .field-inline input, .cycle-bar input[type="date"] { flex: 1; min-height: 42px; }
+
+    /* Bigger summary tiles, two-up. */
+    .cycle-summary { gap: 10px; }
+    .stat { padding: 12px 10px; min-width: 0; flex: 1 1 calc(50% - 10px); }
+
+    /* Roomier day cells for touch. */
+    .day-cell { width: 64px; min-height: 104px; }
+    .chart-page { padding: 10px 14px 70px; }
+}
+
 @media (max-width: 560px) {
-    .site-nav { gap: 12px; }
-    .site-nav a:not(.btn) { display: none; }
-    .section { padding: 44px 20px; }
-    .modal { padding: 22px 18px; }
-    .modal-actions { flex-direction: column-reverse; align-items: stretch; }
-    .modal-actions-right { flex-direction: column; }
-    .seg { font-size: 0.82rem; padding: 9px 4px; }
+    .section { padding: 40px 18px; }
+    .hero { padding: 24px 18px 30px; }
+    .hero h1 { font-size: clamp(1.9rem, 8vw, 2.4rem); }
+    .lede { font-size: 1.05rem; }
+    .hero-actions .btn { width: 100%; }
+    .cta { padding: 50px 18px 64px; }
+    .quote-band { padding: 16px 16px 36px; }
+    .quote { padding: 26px 22px 22px; }
+    .quote::before { font-size: 2.6rem; top: 22px; left: 12px; }
+
+    /* Make tappable targets comfortable on phones. */
+    .chip { padding: 11px 15px; font-size: 0.95rem; }
+    .btn { min-height: 46px; }
+    .btn-sm { min-height: 40px; }
+    .check input { width: 22px; height: 22px; }
+
+    /* ----- Entry modal becomes a bottom sheet for thumb-friendly editing ----- */
+    .modal-overlay { padding: 0; align-items: flex-end; }
+    .modal {
+        max-width: 100%;
+        width: 100%;
+        max-height: 92vh;
+        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        padding: 22px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+        animation: sheet-up 0.26s cubic-bezier(0.18, 0.9, 0.34, 1.1);
+    }
+    .modal-narrow { max-width: 100%; }
+    .modal::before {
+        content: ''; display: block;
+        width: 42px; height: 5px; border-radius: 999px;
+        background: var(--rose-200); margin: -6px auto 14px;
+    }
+    .modal-title { font-size: 1.4rem; }
+    .modal-close { top: 10px; right: 12px; }
+
+    /* Keep Save/Cancel reachable at the bottom of the sheet. */
+    .modal-actions {
+        position: sticky; bottom: 0;
+        flex-direction: row; align-items: stretch;
+        gap: 10px; margin: 16px -16px 0;
+        padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+        background: var(--cream);
+        border-top: 1px solid var(--line);
+    }
+    .modal-actions-right { flex: 1; display: flex; gap: 10px; }
+    .modal-actions-right .btn { flex: 1; }
+    #entry-clear { flex: 0 0 auto; }
+
+    /* Stack the day-type-free observation chips comfortably. */
+    .chip-col .chip { width: 100%; }
+    .note-tips-label { width: 100%; padding-top: 0; }
+}
+
+@keyframes sheet-up { from { opacity: 0; transform: translateY(100%); } to { opacity: 1; transform: translateY(0); } }
+
+@media (max-width: 420px) {
+    .site-header { padding: 12px 14px; }
+    .logo { font-size: 1.25rem; }
+    .site-nav { gap: 10px 12px; font-size: 0.9rem; }
+    .day-cell { width: 58px; min-height: 98px; padding: 9px 4px; }
+    .day-code { font-size: 0.7rem; }
+    .stat-value { font-size: 1.3rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
