@@ -581,7 +581,7 @@ textarea, #notes-input {
 
 /* "Sign in to sync" — a cute, clearly-visible pink pill so it doesn't blend in. */
 #sync-btn {
-    background: linear-gradient(135deg, var(--rose-100), var(--rose-200));
+    background: var(--rose-200);
     color: var(--rose-600);
     border: 2px solid var(--rose-400);
     border-radius: 999px;
@@ -590,14 +590,14 @@ textarea, #notes-input {
     padding: 8px 18px;
 }
 #sync-btn:hover {
-    background: linear-gradient(135deg, var(--rose-200), var(--rose-300));
+    background: var(--rose-300);
     color: var(--rose-600);
     border-color: var(--rose-500);
     transform: translateY(-1px);
 }
 #sync-btn.synced {
     color: #fff;
-    background: linear-gradient(135deg, var(--sticker-green), #46a35d);
+    background: var(--sticker-green);
     border-color: #3f9656;
     box-shadow: none;
 }
@@ -627,8 +627,18 @@ textarea, #notes-input {
 .note-tips-label { font-size: 0.82rem; font-weight: 700; color: var(--ink-soft); padding-top: 8px; }
 .chip-note { font-size: 0.82rem; padding: 6px 11px; }
 
-/* Strip tools (extend cycle) */
-.strip-tools { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 12px 2px 0; }
+/* Compact segmented control (view options in the cycle bar) */
+.seg-control.seg-sm { padding: 3px; gap: 2px; }
+.seg-sm .seg { padding: 6px 11px; font-size: 0.82rem; flex: 0 0 auto; }
+
+/* Multi-cycle view — one labelled, scrollable strip per cycle */
+#multi-view { display: flex; flex-direction: column; gap: 18px; margin-top: 8px; }
+.cycle-block { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow-sm); padding: 6px 6px 2px; }
+.cycle-block-head { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: baseline; padding: 10px 12px 4px; }
+.cycle-block-head strong { font-family: var(--font-head); font-size: 1.1rem; color: var(--ink); }
+.cycle-block-head span { font-size: 0.84rem; color: var(--ink-soft); }
+.cycle-block .chart-scroll { border: none; box-shadow: none; padding: 0 4px 8px; }
+.cycle-block .day-cell { width: 60px; min-height: 104px; }
 
 /* Day 7 breast self-exam marker */
 .day-bse {
@@ -643,6 +653,7 @@ textarea, #notes-input {
    ========================================================================== */
 #print-area { display: none; }
 @media print {
+    @page { size: landscape; margin: 10mm; }
     body { background: #fff !important; }
     body.printing > *:not(#print-area) { display: none !important; }
     #print-area {
@@ -650,15 +661,18 @@ textarea, #notes-input {
         -webkit-print-color-adjust: exact; print-color-adjust: exact;
     }
     .pc-head h1 { font-size: 18pt; margin: 0 0 6px; }
+    .pc-cycle { margin-bottom: 22px; page-break-inside: avoid; border-top: 1pt solid #ccc; padding-top: 10px; }
+    .pc-cycle:first-of-type { border-top: none; padding-top: 0; }
     .pc-meta { display: flex; gap: 18px; flex-wrap: wrap; font-size: 9pt; margin-bottom: 14px; color: #333; }
+    .pc-notes h3 { font-size: 10pt; margin: 0 0 4px; }
     .pc-row { border-collapse: collapse; width: 100%; margin-bottom: 10px; table-layout: fixed; page-break-inside: avoid; }
     .pc-cell {
         border: 0.5pt solid #999; text-align: center; vertical-align: top;
-        padding: 3px 1px; font-size: 6.5pt; width: 2.8%;
+        padding: 3px 1px; font-size: 7pt; width: 2.8%;
     }
     .pc-daynum { font-weight: 800; }
-    .pc-date { color: #555; font-size: 5.5pt; }
-    .pc-sticker { --size: 16px; margin: 2px auto; box-shadow: none; border-width: 1px; }
+    .pc-date { color: #555; font-size: 6pt; }
+    .pc-sticker { --size: 19px; margin: 2px auto; box-shadow: none; border-width: 1px; }
     .pc-sticker .sticker-count { font-size: 6pt; box-shadow: none; }
     .pc-code { font-weight: 700; word-break: break-all; min-height: 1em; }
     .pc-i { color: #6a4a8a; font-weight: 800; min-height: 0.9em; }

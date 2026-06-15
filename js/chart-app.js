@@ -12,6 +12,8 @@
 
     // --- App state (which cycle / day is in view) -------------------------
     let activeCycle = 0;
+    let viewCount = 1;            // how many recent cycles to show (1 / 3 / 6 / 12)
+    let editingCycle = 0;         // cycle index being edited in the modal
     let editingDay = -1;          // day index being edited in the modal
     // Draft observation while the modal is open.
     let draft = null;
@@ -55,8 +57,76 @@
         // Keep activeCycle in range.
         if (activeCycle >= data.cycles.length) activeCycle = data.cycles.length - 1;
         renderCycleSelect(data);
-        renderStrip();
-        renderSummary();
+
+        const multi = viewCount > 1;
+        $('single-view').classList.toggle('hidden', multi);
+        $('multi-view').classList.toggle('hidden', !multi);
+        if (multi) {
+            renderMulti(data, viewCount);
+        } else {
+            renderStrip();
+            renderSummary();
+        }
+    }
+
+    // Build one day cell button for a given cycle.
+    function buildCell(cycleIndex, days, i, peakIndex) {
+        const day = days[i];
+        const sticker = C.getSticker(day, i, days);
+        const label = C.peakLabel(i, peakIndex);
+        const code = C.buildCode(day);
+
+        const cell = document.createElement('button');
+        cell.className = 'day-cell';
+        cell.type = 'button';
+        if (sticker === C.STICKER.NONE) cell.classList.add('day-empty');
+        if (day.intercourse) cell.classList.add('has-intercourse');
+
+        cell.innerHTML =
+            '<span class="day-num">' + day.day + '</span>' +
+            '<span class="sticker ' + STICKER_CLASS[sticker] + '">' +
+                stickerInner(sticker, label) +
+            '</span>' +
+            '<span class="day-code">' + (code ? escapeHtml(code) : '') + '</span>' +
+            (day.day === 7 ? '<span class="day-bse" title="Day 7 — best day for a breast self-exam">BSE</span>' : '') +
+            (day.intercourse ? '<span class="day-i" title="Intercourse">I</span>' : '');
+
+        cell.addEventListener('click', function () { openEntry(cycleIndex, i); });
+        return cell;
+    }
+
+    // Render the last `n` cycles stacked, each as a labelled scrolling strip.
+    function renderMulti(data, n) {
+        const container = $('multi-view');
+        container.innerHTML = '';
+        const start = Math.max(0, data.cycles.length - n);
+        for (let ci = data.cycles.length - 1; ci >= start; ci--) {
+            const cycle = data.cycles[ci];
+            const days = cycle.days;
+            const peakIndex = C.findPeakIndex(days);
+            const s = C.summarizeCycle(days);
+
+            const block = document.createElement('section');
+            block.className = 'cycle-block';
+
+            const head = document.createElement('div');
+            head.className = 'cycle-block-head';
+            head.innerHTML =
+                '<strong>' + escapeHtml(cycle.name) + '</strong>' +
+                (cycle.startDate ? '<span>' + escapeHtml(cycle.startDate) + '</span>' : '') +
+                '<span>Peak: ' + (s.peakDay ? 'Day ' + s.peakDay : '—') + '</span>' +
+                '<span>' + s.recordedDays + ' days recorded</span>';
+            block.appendChild(head);
+
+            const scroll = document.createElement('div');
+            scroll.className = 'chart-scroll';
+            const stripEl = document.createElement('div');
+            stripEl.className = 'chart-strip';
+            days.forEach(function (_, i) { stripEl.appendChild(buildCell(ci, days, i, peakIndex)); });
+            scroll.appendChild(stripEl);
+            block.appendChild(scroll);
+            container.appendChild(block);
+        }
     }
 
     function renderCycleSelect(data) {
@@ -73,32 +143,8 @@
         if (!cycle) return;
         const days = cycle.days;
         const peakIndex = C.findPeakIndex(days);
-
         strip.innerHTML = '';
-        days.forEach(function (day, i) {
-            const sticker = C.getSticker(day, i, days);
-            const label = C.peakLabel(i, peakIndex);
-            const code = C.buildCode(day);
-
-            const cell = document.createElement('button');
-            cell.className = 'day-cell';
-            cell.type = 'button';
-            cell.dataset.index = i;
-            if (sticker === C.STICKER.NONE) cell.classList.add('day-empty');
-            if (day.intercourse) cell.classList.add('has-intercourse');
-
-            cell.innerHTML =
-                '<span class="day-num">' + day.day + '</span>' +
-                '<span class="sticker ' + STICKER_CLASS[sticker] + '">' +
-                    stickerInner(sticker, label) +
-                '</span>' +
-                '<span class="day-code">' + (code ? escapeHtml(code) : '') + '</span>' +
-                (day.day === 7 ? '<span class="day-bse" title="Day 7 — best day for a breast self-exam">BSE</span>' : '') +
-                (day.intercourse ? '<span class="day-i" title="Intercourse">I</span>' : '');
-
-            cell.addEventListener('click', function () { openEntry(i); });
-            strip.appendChild(cell);
-        });
+        days.forEach(function (_, i) { strip.appendChild(buildCell(activeCycle, days, i, peakIndex)); });
     }
 
     function renderSummary() {
@@ -123,9 +169,10 @@
        ====================================================================== */
     const modal = $('entry-modal');
 
-    function openEntry(dayIndex) {
+    function openEntry(cycleIndex, dayIndex) {
+        editingCycle = cycleIndex;
         editingDay = dayIndex;
-        const day = Store.getCycle(activeCycle).days[dayIndex];
+        const day = Store.getCycle(editingCycle).days[dayIndex];
         // Build an editable draft copy.
         draft = {
             flow: day.flow,
@@ -303,7 +350,7 @@
 
         const dayForCalc = Object.assign({}, draft);
         // Evaluate the sticker as if this draft were saved, within the cycle.
-        const days = Store.getCycle(activeCycle).days.slice();
+        const days = Store.getCycle(editingCycle).days.slice();
         days[editingDay] = Object.assign({}, days[editingDay], dayForCalc);
         const peakIndex = C.findPeakIndex(days);
         const sticker = C.getSticker(days[editingDay], editingDay, days);
@@ -331,13 +378,13 @@
 
         // A single Peak day per cycle — clear any other peak when setting one.
         if (draft.peak) {
-            const days = Store.getCycle(activeCycle).days;
+            const days = Store.getCycle(editingCycle).days;
             days.forEach(function (d, i) {
-                if (i !== editingDay && d.peak) Store.updateDay(activeCycle, i, { peak: false });
+                if (i !== editingDay && d.peak) Store.updateDay(editingCycle, i, { peak: false });
             });
         }
 
-        Store.updateDay(activeCycle, editingDay, {
+        Store.updateDay(editingCycle, editingDay, {
             flow: draft.flow,
             observation: draft.observation && draft.observation.category ? draft.observation : null,
             peak: draft.peak,
@@ -352,6 +399,15 @@
        Cycle bar actions
        ====================================================================== */
     function wireCycleBar() {
+        $('view-modes').addEventListener('click', function (e) {
+            const btn = e.target.closest('.seg');
+            if (!btn) return;
+            viewCount = parseInt(btn.dataset.view, 10) || 1;
+            $('view-modes').querySelectorAll('.seg').forEach(function (b) {
+                b.classList.toggle('active', b === btn);
+            });
+            render();
+        });
         cycleSelect.addEventListener('change', function () {
             activeCycle = parseInt(cycleSelect.value, 10) || 0;
             render();
@@ -363,11 +419,6 @@
             activeCycle = Store.addCycle();
             render();
             toast('New cycle added');
-        });
-        $('extend-cycle').addEventListener('click', function () {
-            Store.extendCycle(activeCycle, 7);
-            render();
-            toast('Added 7 more days');
         });
 
         const menu = $('cycle-menu');
@@ -403,7 +454,11 @@
     }
 
     function handleMenuAction(action) {
-        if (action === 'print') {
+        if (action === 'extend') {
+            Store.extendCycle(activeCycle, 7);
+            render();
+            toast('Added 7 more days');
+        } else if (action === 'print') {
             printChart();
         } else if (action === 'export') {
             const blob = new Blob([Store.exportJSON()], { type: 'application/json' });
@@ -444,9 +499,8 @@
         return (d.getMonth() + 1) + '/' + d.getDate();
     }
 
-    function printChart() {
-        const cycle = Store.getCycle(activeCycle);
-        if (!cycle) return;
+    // Build the printable block for a single cycle.
+    function cyclePrintHtml(cycle) {
         const days = cycle.days;
         const peakIndex = C.findPeakIndex(days);
         const s = C.summarizeCycle(days);
@@ -472,24 +526,39 @@
             rows += '<table class="pc-row"><tr>' + cells.slice(r, r + PER_ROW).join('') + '</tr></table>';
         }
 
+        const notes = days.filter(function (d) { return d.notes; });
+        return '<div class="pc-cycle">' +
+            '<div class="pc-meta">' +
+                '<span><strong>' + escapeHtml(cycle.name) + '</strong></span>' +
+                (cycle.startDate ? '<span>Start: ' + escapeHtml(cycle.startDate) + '</span>' : '') +
+                (s.peakDay ? '<span>Peak: Day ' + s.peakDay + '</span>' : '') +
+                '<span>Length: ' + s.cycleLength + ' days</span>' +
+            '</div>' +
+            rows +
+            (notes.length
+                ? '<div class="pc-notes"><h3>Daily notes</h3>' +
+                    notes.map(function (d) {
+                        return '<div class="pc-note"><strong>Day ' + d.day + ':</strong> ' + escapeHtml(d.notes) + '</div>';
+                    }).join('') + '</div>'
+                : '') +
+        '</div>';
+    }
+
+    function printChart() {
+        const all = Store.getData().cycles;
+        if (!all.length) return;
+        // The last 6 cycles, most recent first.
+        const cycles = all.slice(-6).reverse();
+
         const container = document.createElement('div');
         container.id = 'print-area';
         container.innerHTML =
             '<div class="pc-head">' +
                 '<h1>🌸 Vita Nova — Fertility Chart</h1>' +
-                '<div class="pc-meta">' +
-                    '<span><strong>' + escapeHtml(cycle.name) + '</strong></span>' +
-                    (cycle.startDate ? '<span>Start: ' + escapeHtml(cycle.startDate) + '</span>' : '') +
-                    (s.peakDay ? '<span>Peak: Day ' + s.peakDay + '</span>' : '') +
-                    '<span>Length: ' + s.cycleLength + ' days</span>' +
-                '</div>' +
+                '<div class="pc-meta"><span>Last ' + cycles.length +
+                    (cycles.length === 1 ? ' cycle' : ' cycles') + '</span></div>' +
             '</div>' +
-            rows +
-            '<div class="pc-notes"><h2>Daily notes</h2>' +
-                days.filter(function (d) { return d.notes; }).map(function (d) {
-                    return '<div class="pc-note"><strong>Day ' + d.day + ':</strong> ' + escapeHtml(d.notes) + '</div>';
-                }).join('') +
-            '</div>' +
+            cycles.map(cyclePrintHtml).join('') +
             '<p class="pc-foot">Educational charting aid — not medical advice.</p>';
 
         const prev = $('print-area');
@@ -580,7 +649,7 @@
         $('entry-cancel').addEventListener('click', closeEntry);
         $('entry-save').addEventListener('click', saveEntry);
         $('entry-clear').addEventListener('click', function () {
-            Store.clearDay(activeCycle, editingDay);
+            Store.clearDay(editingCycle, editingDay);
             closeEntry();
             toast('Day cleared');
         });

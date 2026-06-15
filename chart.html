@@ -39,10 +39,17 @@
                 </label>
             </div>
             <div class="cycle-bar-right">
+                <div class="seg-control seg-sm" id="view-modes" title="How many recent cycles to show">
+                    <button data-view="1" class="seg active">This cycle</button>
+                    <button data-view="3" class="seg">Last 3</button>
+                    <button data-view="6" class="seg">Last 6</button>
+                    <button data-view="12" class="seg">Last 12</button>
+                </div>
                 <button id="add-cycle" class="btn btn-outline btn-sm">+ New cycle</button>
                 <button id="cycle-menu-btn" class="btn btn-ghost btn-sm" aria-haspopup="true" title="More actions">⋯</button>
                 <div id="cycle-menu" class="menu hidden" role="menu">
-                    <button data-action="print" role="menuitem">Export to PDF / Print chart…</button>
+                    <button data-action="extend" role="menuitem">+ Add 7 days to this cycle</button>
+                    <button data-action="print" role="menuitem">Export to PDF (last 6 cycles)…</button>
                     <button data-action="export" role="menuitem">Export data (JSON)</button>
                     <button data-action="import" role="menuitem">Import data…</button>
                     <button data-action="delete-cycle" role="menuitem">Delete this cycle</button>
@@ -52,17 +59,19 @@
             </div>
         </section>
 
-        <!-- Cycle summary -->
-        <section id="cycle-summary" class="cycle-summary"></section>
+        <!-- Single-cycle view -->
+        <div id="single-view">
+            <!-- Cycle summary -->
+            <section id="cycle-summary" class="cycle-summary"></section>
 
-        <!-- The chart strip -->
-        <section class="chart-scroll">
-            <div id="chart-strip" class="chart-strip"></div>
-        </section>
-        <div class="strip-tools">
-            <button id="extend-cycle" class="btn btn-outline btn-sm">+ Add 7 more days</button>
-            <span class="muted small">Cycle longer than usual? Add more days to keep charting.</span>
+            <!-- The chart strip -->
+            <section class="chart-scroll">
+                <div id="chart-strip" class="chart-strip"></div>
+            </section>
         </div>
+
+        <!-- Multi-cycle view (last 3 / 6 / 12) -->
+        <div id="multi-view" class="hidden"></div>
 
         <!-- Legend -->
         <section class="legend">
