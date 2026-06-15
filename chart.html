@@ -3,7 +3,11 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#fff5f7">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Vita Nova">
     <title>My Chart · Vita Nova</title>
     <meta name="description" content="Chart your cycle with a natural Catholic fertility method for NFP.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -16,7 +20,10 @@
 
     <header class="site-header">
         <a class="logo" href="index.html"><span class="logo-mark">🌸</span> Vita Nova</a>
-        <nav class="site-nav">
+        <button class="nav-toggle" id="nav-toggle" aria-label="Menu" aria-expanded="false" aria-controls="site-nav">
+            <span></span><span></span><span></span>
+        </button>
+        <nav class="site-nav" id="site-nav">
             <a href="index.html">Home</a>
             <a href="index.html#learn">Learn</a>
             <a href="rules.html">Rules</a>
@@ -49,7 +56,7 @@
                 <button id="cycle-menu-btn" class="btn btn-ghost btn-sm" aria-haspopup="true" title="More actions">⋯</button>
                 <div id="cycle-menu" class="menu hidden" role="menu">
                     <button data-action="extend" role="menuitem">+ Add 7 days to this cycle</button>
-                    <button data-action="print" role="menuitem">Export to PDF (last 6 cycles)…</button>
+                    <button data-action="print" role="menuitem">Export to PDF…</button>
                     <button data-action="export" role="menuitem">Export data (JSON)</button>
                     <button data-action="import" role="menuitem">Import data…</button>
                     <button data-action="delete-cycle" role="menuitem">Delete this cycle</button>
@@ -174,8 +181,42 @@
         </div>
     </div>
 
+    <!-- Export to PDF modal -->
+    <div id="export-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="export-title">
+        <div class="modal modal-narrow">
+            <button id="export-close" class="modal-close" aria-label="Close">×</button>
+            <h2 id="export-title" class="modal-title">Export to PDF</h2>
+            <p class="muted small">Opens your browser's print dialog — choose <strong>“Save as PDF”</strong>. Charts print in landscape, trimmed to your last observation in each cycle.</p>
+
+            <div class="entry-section">
+                <h3 class="entry-label">How many cycles?</h3>
+                <div class="seg-control seg-sm" id="export-count">
+                    <button type="button" data-count="1" class="seg">1</button>
+                    <button type="button" data-count="3" class="seg">3</button>
+                    <button type="button" data-count="6" class="seg active">6</button>
+                    <button type="button" data-count="12" class="seg">12</button>
+                    <button type="button" data-count="all" class="seg">All</button>
+                </div>
+                <p class="entry-note">Includes your most recent cycles, newest first.</p>
+            </div>
+
+            <div class="entry-section entry-toggles">
+                <label class="check"><input type="checkbox" id="export-notes" checked> <span>Include daily notes</span></label>
+                <label class="check"><input type="checkbox" id="export-intercourse" checked> <span>Include intercourse (I) marks</span></label>
+            </div>
+
+            <div class="modal-actions">
+                <button id="export-cancel" class="btn btn-outline">Cancel</button>
+                <div class="modal-actions-right">
+                    <button id="export-go" class="btn btn-primary">Export PDF</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="toast" class="toast hidden"></div>
 
+    <script src="js/nav.js"></script>
     <script src="js/charting.js"></script>
     <script src="js/store.js"></script>
     <script src="js/chart-app.js"></script>

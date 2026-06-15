@@ -3,7 +3,11 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#fff5f7">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Vita Nova">
     <title>Vita Nova · Natural Catholic Fertility Charting</title>
     <meta name="description" content="A simple, beautiful way to chart your cycle with a natural Catholic method — for Natural Family Planning, fully in line with the teaching of the Church.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -16,7 +20,10 @@
 
     <header class="site-header">
         <a class="logo" href="index.html"><span class="logo-mark">🌸</span> Vita Nova</a>
-        <nav class="site-nav">
+        <button class="nav-toggle" id="nav-toggle" aria-label="Menu" aria-expanded="false" aria-controls="site-nav">
+            <span></span><span></span><span></span>
+        </button>
+        <nav class="site-nav" id="site-nav">
             <a href="#learn">Learn</a>
             <a href="#benefits">Health benefits</a>
             <a href="rules.html">The rules</a>
@@ -222,6 +229,7 @@
         <p class="muted small">Made with care. Your data stays on your device unless you choose to sync.</p>
     </footer>
 
+    <script src="js/nav.js"></script>
     <script>
         // Gentle rotating reflections from the Church on married love and life.
         (function () {

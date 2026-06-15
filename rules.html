@@ -3,7 +3,11 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#fff5f7">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Vita Nova">
     <title>The Rules · Vita Nova</title>
     <meta name="description" content="The natural charting rules in plain language — the VDRS code, the stickers, and how the fertile window guides family planning.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -16,7 +20,10 @@
 
     <header class="site-header">
         <a class="logo" href="index.html"><span class="logo-mark">🌸</span> Vita Nova</a>
-        <nav class="site-nav">
+        <button class="nav-toggle" id="nav-toggle" aria-label="Menu" aria-expanded="false" aria-controls="site-nav">
+            <span></span><span></span><span></span>
+        </button>
+        <nav class="site-nav" id="site-nav">
             <a href="index.html">Home</a>
             <a href="index.html#learn">Learn</a>
             <a href="rules.html">Rules</a>
@@ -173,6 +180,7 @@
         <p class="muted small">Made with care. Your data stays on your device unless you choose to sync.</p>
     </footer>
 
+    <script src="js/nav.js"></script>
 </body>
 
 </html>

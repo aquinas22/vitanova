@@ -459,7 +459,7 @@
             render();
             toast('Added 7 more days');
         } else if (action === 'print') {
-            printChart();
+            openExport();
         } else if (action === 'export') {
             const blob = new Blob([Store.exportJSON()], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
@@ -499,13 +499,25 @@
         return (d.getMonth() + 1) + '/' + d.getDate();
     }
 
-    // Build the printable block for a single cycle.
-    function cyclePrintHtml(cycle) {
+    // Index of the last day with any entry, or -1 if the cycle is empty.
+    function lastEntryIndex(days) {
+        for (let i = days.length - 1; i >= 0; i--) {
+            if (C.dayHasEntry(days[i])) return i;
+        }
+        return -1;
+    }
+
+    // Build the printable block for a single cycle, trimmed to its last
+    // observation. Returns '' when the cycle has no observations at all.
+    function cyclePrintHtml(cycle, opts) {
         const days = cycle.days;
+        const last = lastEntryIndex(days);
+        if (last < 0) return '';
+        const shown = days.slice(0, last + 1);
         const peakIndex = C.findPeakIndex(days);
         const s = C.summarizeCycle(days);
 
-        const cells = days.map(function (day, i) {
+        const cells = shown.map(function (day, i) {
             const sticker = C.getSticker(day, i, days);
             const label = C.peakLabel(i, peakIndex);
             const code = C.buildCode(day);
@@ -515,7 +527,7 @@
                     '<div class="pc-date">' + escapeHtml(dayDate(cycle.startDate, i)) + '</div>' +
                     '<div class="pc-sticker sticker ' + STICKER_CLASS[sticker] + '">' + stickerInner(sticker, label) + '</div>' +
                     '<div class="pc-code">' + (code ? escapeHtml(code) : '') + '</div>' +
-                    '<div class="pc-i">' + (day.intercourse ? 'I' : '') + '</div>' +
+                    (opts.includeIntercourse ? '<div class="pc-i">' + (day.intercourse ? 'I' : '') + '</div>' : '') +
                 '</td>';
         });
 
@@ -526,16 +538,16 @@
             rows += '<table class="pc-row"><tr>' + cells.slice(r, r + PER_ROW).join('') + '</tr></table>';
         }
 
-        const notes = days.filter(function (d) { return d.notes; });
+        const notes = shown.filter(function (d) { return d.notes; });
         return '<div class="pc-cycle">' +
             '<div class="pc-meta">' +
                 '<span><strong>' + escapeHtml(cycle.name) + '</strong></span>' +
                 (cycle.startDate ? '<span>Start: ' + escapeHtml(cycle.startDate) + '</span>' : '') +
                 (s.peakDay ? '<span>Peak: Day ' + s.peakDay + '</span>' : '') +
-                '<span>Length: ' + s.cycleLength + ' days</span>' +
+                '<span>' + s.recordedDays + ' days charted</span>' +
             '</div>' +
             rows +
-            (notes.length
+            (opts.includeNotes && notes.length
                 ? '<div class="pc-notes"><h3>Daily notes</h3>' +
                     notes.map(function (d) {
                         return '<div class="pc-note"><strong>Day ' + d.day + ':</strong> ' + escapeHtml(d.notes) + '</div>';
@@ -544,21 +556,29 @@
         '</div>';
     }
 
-    function printChart() {
+    function printChart(opts) {
         const all = Store.getData().cycles;
         if (!all.length) return;
-        // The last 6 cycles, most recent first.
-        const cycles = all.slice(-6).reverse();
+        const n = opts.count === 'all' ? all.length : Math.min(opts.count, all.length);
+        const chosen = all.slice(-n).reverse(); // most recent first
+        const blocks = chosen
+            .map(function (c) { return cyclePrintHtml(c, opts); })
+            .filter(Boolean);
+
+        if (!blocks.length) {
+            toast('Nothing to export yet — chart a day first');
+            return;
+        }
 
         const container = document.createElement('div');
         container.id = 'print-area';
         container.innerHTML =
             '<div class="pc-head">' +
                 '<h1>🌸 Vita Nova — Fertility Chart</h1>' +
-                '<div class="pc-meta"><span>Last ' + cycles.length +
-                    (cycles.length === 1 ? ' cycle' : ' cycles') + '</span></div>' +
+                '<div class="pc-meta"><span>' + blocks.length +
+                    (blocks.length === 1 ? ' cycle' : ' cycles') + '</span></div>' +
             '</div>' +
-            cycles.map(cyclePrintHtml).join('') +
+            blocks.join('') +
             '<p class="pc-foot">Educational charting aid — not medical advice.</p>';
 
         const prev = $('print-area');
@@ -576,6 +596,48 @@
         window.print();
         // Fallback cleanup if afterprint never fires (some browsers).
         setTimeout(cleanup, 1000);
+    }
+
+    /* ======================================================================
+       Export dialog — choose cycle count and what to include.
+       ====================================================================== */
+    const exportModal = $('export-modal');
+
+    function openExport() {
+        exportModal.classList.remove('hidden');
+        document.body.classList.add('modal-open');
+    }
+    function closeExport() {
+        exportModal.classList.add('hidden');
+        document.body.classList.remove('modal-open');
+    }
+
+    function wireExport() {
+        $('export-count').addEventListener('click', function (e) {
+            const btn = e.target.closest('.seg');
+            if (!btn) return;
+            $('export-count').querySelectorAll('.seg').forEach(function (b) {
+                b.classList.toggle('active', b === btn);
+            });
+        });
+
+        $('export-close').addEventListener('click', closeExport);
+        $('export-cancel').addEventListener('click', closeExport);
+        exportModal.addEventListener('click', function (e) { if (e.target === exportModal) closeExport(); });
+
+        $('export-go').addEventListener('click', function () {
+            const active = $('export-count').querySelector('.seg.active');
+            const raw = active ? active.dataset.count : '6';
+            closeExport();
+            // Let the dialog close paint before opening the print dialog.
+            setTimeout(function () {
+                printChart({
+                    count: raw === 'all' ? 'all' : parseInt(raw, 10),
+                    includeNotes: $('export-notes').checked,
+                    includeIntercourse: $('export-intercourse').checked
+                });
+            }, 50);
+        });
     }
 
     /* ======================================================================
@@ -665,6 +727,7 @@
                     $('auth-modal').classList.add('hidden');
                     document.body.classList.remove('modal-open');
                 }
+                if (!exportModal.classList.contains('hidden')) closeExport();
             }
         });
     }
@@ -694,6 +757,7 @@
         wireCycleBar();
         wireModal();
         wireAuth();
+        wireExport();
         Store.subscribe(render);
         render();
     }
