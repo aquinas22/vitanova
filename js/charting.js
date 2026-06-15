@@ -251,6 +251,60 @@
     }
 
     /* ----------------------------------------------------------------------
+       Intercourse guidance — educational hints from the method's rules,
+       tailored to the couple's goal. NOT medical advice.
+
+       intent: 'avoid' | 'conceive'
+       returns { level, title, detail } or null when no guidance applies.
+       level: 'fertile' | 'available' | 'best' | 'good' | 'wait'
+       ---------------------------------------------------------------------- */
+    function intercourseGuidance(day, index, days, intent) {
+        if (intent !== 'avoid' && intent !== 'conceive') return null;
+        if (!dayHasEntry(day)) return null;
+
+        const peakIndex = findPeakIndex(days);
+        const label = peakLabel(index, peakIndex);
+        const bleeding = dayHasFlow(day);
+        const mucus = dayHasMucus(day);
+        const isPeak = label === 'P';
+        const isCount = label === '1' || label === '2' || label === '3';
+        const postPeak = peakIndex >= 0 && index > peakIndex + 3;
+        const fertile = isPeak || isCount || mucus;
+
+        if (intent === 'avoid') {
+            if (bleeding) {
+                return { level: 'fertile', title: 'Avoid', detail: 'Bleeding can mask mucus, so days of flow are treated as fertile.' };
+            }
+            if (fertile) {
+                return { level: 'fertile', title: 'Avoid — fertile', detail: 'A fertile sign is present (or you’re within Peak + 3). Conception is possible.' };
+            }
+            if (postPeak) {
+                return { level: 'available', title: 'Likely available', detail: 'Post-Peak infertile phase — any time, day or evening.' };
+            }
+            // Dry day before Peak.
+            return { level: 'available', title: 'Available — evenings, EOD', detail: 'Dry day before Peak: evenings only and every other day, so residue isn’t mistaken for mucus.' };
+        }
+
+        // intent === 'conceive'
+        if (isPeak) {
+            return { level: 'best', title: 'Best chance', detail: 'Peak Day — usually the most fertile day of the whole cycle.' };
+        }
+        if (mucus && !postPeak) {
+            return { level: 'best', title: 'Very fertile', detail: 'Fertile-type mucus is present — a prime time to try, especially around Peak.' };
+        }
+        if (isCount) {
+            return { level: 'good', title: 'Still fertile', detail: 'Just after Peak — fertility is winding down, but conception is still possible.' };
+        }
+        if (bleeding) {
+            return { level: 'wait', title: 'Wait', detail: 'Menstruation — watch for mucus to return.' };
+        }
+        if (postPeak) {
+            return { level: 'wait', title: 'Window passed', detail: 'The fertile window has likely closed for this cycle.' };
+        }
+        return { level: 'wait', title: 'Building', detail: 'Dry for now — watch for mucus as fertility builds toward Peak.' };
+    }
+
+    /* ----------------------------------------------------------------------
        Plain-language interpretation for a day (shown to the user).
        ---------------------------------------------------------------------- */
     function interpret(sticker, label) {
@@ -315,6 +369,7 @@
         validateDraft: validateDraft,
         flowIsLight: flowIsLight,
         getSticker: getSticker,
+        intercourseGuidance: intercourseGuidance,
         findPeakIndex: findPeakIndex,
         peakLabel: peakLabel,
         dayHasMucus: dayHasMucus,

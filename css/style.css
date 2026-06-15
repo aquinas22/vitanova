@@ -430,20 +430,20 @@ code {
 .chart-page { max-width: var(--maxw); margin: 0 auto; padding: 10px 24px 80px; }
 
 .cycle-bar {
-    display: flex; flex-wrap: wrap; gap: 14px;
-    align-items: center; justify-content: space-between;
+    display: flex; flex-wrap: wrap; gap: 10px 16px;
+    align-items: center; justify-content: center;
     background: #fff; border: 1px solid var(--line);
-    border-radius: var(--radius); padding: 14px 18px;
+    border-radius: var(--radius); padding: 12px 16px;
     box-shadow: var(--shadow-sm); position: relative;
 }
-.cycle-bar-left { display: flex; flex-wrap: wrap; gap: 18px; }
+.cycle-bar-left { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
 .cycle-bar-right { display: flex; align-items: center; gap: 8px; position: relative; }
-.field-inline { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; color: var(--ink-soft); font-size: 0.9rem; }
+.field-inline { display: inline-flex; align-items: center; gap: 7px; font-weight: 700; color: var(--ink-soft); font-size: 0.85rem; }
 .field-inline select, .field-inline input,
 .cycle-bar input[type="date"] {
     font: inherit; font-weight: 600; color: var(--ink);
     border: 1px solid var(--rose-200); border-radius: var(--radius-sm);
-    padding: 7px 10px; background: var(--rose-50);
+    padding: 6px 8px; background: var(--rose-50);
 }
 
 .menu {
@@ -492,7 +492,8 @@ code {
 }
 .day-cell:hover { transform: translateY(-3px); box-shadow: var(--shadow); border-color: var(--rose-300); }
 .day-cell.day-empty { background: #fff; }
-.day-num { font-size: 0.78rem; font-weight: 800; color: var(--ink-soft); }
+.day-num { font-size: 0.78rem; font-weight: 800; color: var(--ink-soft); display: flex; align-items: baseline; gap: 4px; }
+.day-date { font-weight: 600; font-size: 0.68rem; color: var(--rose-400); }
 .day-code {
     font-size: 0.74rem; font-weight: 700; color: var(--ink);
     text-align: center; word-break: break-word; min-height: 1em;
@@ -503,6 +504,46 @@ code {
     font-size: 0.6rem; font-weight: 800; color: var(--plum-500);
 }
 .day-cell.has-intercourse { border-color: var(--plum-300); }
+
+/* Per-day guidance accent (top bar) */
+.day-cell .day-guide {
+    position: absolute; top: 0; left: 0; right: 0; height: 4px;
+    border-top-left-radius: var(--radius-sm); border-top-right-radius: var(--radius-sm);
+}
+.day-cell[data-guide="fertile"]   .day-guide { background: var(--sticker-red); }
+.day-cell[data-guide="available"] .day-guide { background: var(--sticker-green); }
+.day-cell[data-guide="best"]      .day-guide { background: var(--sticker-yellow); }
+.day-cell[data-guide="good"]      .day-guide { background: #8fd3a0; }
+.day-cell[data-guide="wait"]      .day-guide { background: var(--plum-300); }
+
+/* ==========================================================================
+   Goal toggle (toolbar) + intercourse guidance
+   ========================================================================== */
+/* A small, low-key segmented control; only the active option picks up a tint. */
+.goal-toggle.goal-avoid .seg.active { color: var(--sticker-red); }
+.goal-toggle.goal-conceive .seg.active { color: #2f9e54; }
+
+/* Guidance panel inside the entry modal */
+.guidance {
+    display: flex; gap: 14px; align-items: flex-start;
+    border-radius: var(--radius); padding: 14px 16px; margin-bottom: 20px;
+    border: 1px solid var(--line); background: #fff;
+}
+.guidance-icon { font-size: 1.5rem; line-height: 1.2; flex: 0 0 auto; }
+.guidance-text { display: flex; flex-direction: column; gap: 2px; }
+.guidance-text strong { font-family: var(--font-head); font-size: 1.1rem; }
+.guidance-text > span { font-size: 0.9rem; color: var(--ink-soft); }
+.guidance-note { font-size: 0.74rem !important; font-style: italic; opacity: 0.8; margin-top: 4px; }
+.guidance.guide-fertile   { background: #fdedef; border-color: #f5b8c1; }
+.guidance.guide-fertile   strong { color: var(--sticker-red); }
+.guidance.guide-available { background: #ecf8f0; border-color: #a7dbb6; }
+.guidance.guide-available strong { color: #2f9e54; }
+.guidance.guide-best      { background: #fff7e3; border-color: #f3d886; }
+.guidance.guide-best      strong { color: #c8941b; }
+.guidance.guide-good      { background: #eef8f1; border-color: #b9e2c5; }
+.guidance.guide-good      strong { color: #38a05c; }
+.guidance.guide-wait      { background: var(--plum-100); border-color: var(--plum-300); }
+.guidance.guide-wait      strong { color: var(--plum-500); }
 
 /* Legend section on chart page */
 .legend { margin-top: 26px; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 22px 24px; box-shadow: var(--shadow-sm); }
@@ -653,7 +694,7 @@ textarea, #notes-input {
 
 /* Compact segmented control (view options in the cycle bar) */
 .seg-control.seg-sm { padding: 3px; gap: 2px; }
-.seg-sm .seg { padding: 6px 11px; font-size: 0.82rem; flex: 0 0 auto; }
+.seg-sm .seg { padding: 6px 10px; font-size: 0.8rem; flex: 0 0 auto; }
 
 /* Multi-cycle view — one labelled, scrollable strip per cycle */
 #multi-view { display: flex; flex-direction: column; gap: 18px; margin-top: 8px; }
@@ -756,6 +797,9 @@ textarea, #notes-input {
     .field-inline select, .field-inline input, .cycle-bar input[type="date"] { flex: 1; min-height: 42px; }
     #view-modes { width: 100%; }
     #view-modes .seg { flex: 1 0 auto; }
+    .goal-field { justify-content: space-between; }
+    .goal-field .goal-toggle { flex: 1; }
+    .goal-toggle .seg { flex: 1; text-align: center; }
 
     /* Bigger summary tiles, two-up. */
     .cycle-summary { gap: 10px; }

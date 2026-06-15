@@ -13,6 +13,8 @@
     // --- App state (which cycle / day is in view) -------------------------
     let activeCycle = 0;
     let viewCount = 1;            // how many recent cycles to show (1 / 3 / 6 / 12)
+    let goal = 'off';            // family-planning goal: 'off' | 'avoid' | 'conceive'
+    const GOAL_KEY = 'vitanova.goal';
     let editingCycle = 0;         // cycle index being edited in the modal
     let editingDay = -1;          // day index being edited in the modal
     // Draft observation while the modal is open.
@@ -69,12 +71,31 @@
         }
     }
 
+    // Family-planning goal — drives the intercourse guidance hints.
+    function setGoal(g) {
+        goal = (g === 'avoid' || g === 'conceive') ? g : 'off';
+        try { localStorage.setItem(GOAL_KEY, goal); } catch (e) { /* ignore */ }
+        updateGoalButtons();
+        render();
+        if (!modal.classList.contains('hidden') && editingDay >= 0) updatePreview();
+    }
+
+    function updateGoalButtons() {
+        const wrap = $('goal-toggle');
+        wrap.classList.toggle('goal-avoid', goal === 'avoid');
+        wrap.classList.toggle('goal-conceive', goal === 'conceive');
+        wrap.querySelectorAll('.goal-btn').forEach(function (b) {
+            b.classList.toggle('active', b.dataset.goal === goal);
+        });
+    }
+
     // Build one day cell button for a given cycle.
-    function buildCell(cycleIndex, days, i, peakIndex) {
+    function buildCell(cycleIndex, days, i, peakIndex, startDate) {
         const day = days[i];
         const sticker = C.getSticker(day, i, days);
         const label = C.peakLabel(i, peakIndex);
         const code = C.buildCode(day);
+        const date = dayDate(startDate, i);
 
         const cell = document.createElement('button');
         cell.className = 'day-cell';
@@ -82,8 +103,18 @@
         if (sticker === C.STICKER.NONE) cell.classList.add('day-empty');
         if (day.intercourse) cell.classList.add('has-intercourse');
 
+        // Colour accent reflecting intercourse guidance for the chosen goal.
+        let guideBar = '';
+        if (goal !== 'off' && C.intercourseGuidance) {
+            const g = C.intercourseGuidance(day, i, days, goal);
+            if (g) { cell.dataset.guide = g.level; guideBar = '<span class="day-guide"></span>'; }
+        }
+
         cell.innerHTML =
-            '<span class="day-num">' + day.day + '</span>' +
+            guideBar +
+            '<span class="day-num">' + day.day +
+                (date ? ' <span class="day-date">' + escapeHtml(date) + '</span>' : '') +
+            '</span>' +
             '<span class="sticker ' + STICKER_CLASS[sticker] + '">' +
                 stickerInner(sticker, label) +
             '</span>' +
@@ -122,7 +153,7 @@
             scroll.className = 'chart-scroll';
             const stripEl = document.createElement('div');
             stripEl.className = 'chart-strip';
-            days.forEach(function (_, i) { stripEl.appendChild(buildCell(ci, days, i, peakIndex)); });
+            days.forEach(function (_, i) { stripEl.appendChild(buildCell(ci, days, i, peakIndex, cycle.startDate)); });
             scroll.appendChild(stripEl);
             block.appendChild(scroll);
             container.appendChild(block);
@@ -144,7 +175,7 @@
         const days = cycle.days;
         const peakIndex = C.findPeakIndex(days);
         strip.innerHTML = '';
-        days.forEach(function (_, i) { strip.appendChild(buildCell(activeCycle, days, i, peakIndex)); });
+        days.forEach(function (_, i) { strip.appendChild(buildCell(activeCycle, days, i, peakIndex, cycle.startDate)); });
     }
 
     function renderSummary() {
@@ -172,7 +203,8 @@
     function openEntry(cycleIndex, dayIndex) {
         editingCycle = cycleIndex;
         editingDay = dayIndex;
-        const day = Store.getCycle(editingCycle).days[dayIndex];
+        const cycle = Store.getCycle(editingCycle);
+        const day = cycle.days[dayIndex];
         // Build an editable draft copy.
         draft = {
             flow: day.flow,
@@ -186,7 +218,8 @@
             notes: day.notes || ''
         };
 
-        $('entry-title').textContent = 'Day ' + day.day;
+        const date = dayDate(cycle.startDate, dayIndex);
+        $('entry-title').textContent = 'Day ' + day.day + (date ? ' · ' + date : '');
         buildChips();
 
         // Day 7 is the optimal day for a breast self-exam.
@@ -362,6 +395,24 @@
         pv.innerHTML = stickerInner(sticker, label);
         $('preview-code').textContent = code || 'No observation';
         $('preview-interp').textContent = C.interpret(sticker, label);
+
+        renderGuidance(days[editingDay], editingDay, days);
+    }
+
+    const GUIDE_ICON = { fertile: '🚫', available: '💚', best: '💖', good: '🌱', wait: '⏳' };
+
+    function renderGuidance(day, index, days) {
+        const el = $('entry-guidance');
+        const g = (goal === 'off' || !C.intercourseGuidance) ? null : C.intercourseGuidance(day, index, days, goal);
+        if (!g) { el.className = 'guidance hidden'; el.innerHTML = ''; return; }
+        el.className = 'guidance guide-' + g.level;
+        el.innerHTML =
+            '<span class="guidance-icon">' + (GUIDE_ICON[g.level] || '•') + '</span>' +
+            '<div class="guidance-text">' +
+                '<strong>' + escapeHtml(g.title) + '</strong>' +
+                '<span>' + escapeHtml(g.detail) + '</span>' +
+                '<span class="guidance-note">Educational guidance from the method’s rules — not medical advice.</span>' +
+            '</div>';
     }
 
     function saveEntry() {
@@ -407,6 +458,11 @@
                 b.classList.toggle('active', b === btn);
             });
             render();
+        });
+
+        $('goal-toggle').addEventListener('click', function (e) {
+            const btn = e.target.closest('.goal-btn');
+            if (btn) setGoal(btn.dataset.goal);
         });
         cycleSelect.addEventListener('change', function () {
             activeCycle = parseInt(cycleSelect.value, 10) || 0;
@@ -754,6 +810,8 @@
        Boot
        ====================================================================== */
     function init() {
+        try { goal = localStorage.getItem(GOAL_KEY) || 'off'; } catch (e) { goal = 'off'; }
+        updateGoalButtons();
         wireCycleBar();
         wireModal();
         wireAuth();

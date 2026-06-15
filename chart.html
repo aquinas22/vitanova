@@ -44,6 +44,14 @@
                     <span>Start date</span>
                     <input type="date" id="cycle-start">
                 </label>
+                <div class="field-inline goal-field">
+                    <span>Guidance</span>
+                    <div class="seg-control seg-sm goal-toggle" id="goal-toggle" role="group" aria-label="Intercourse guidance goal" title="Show intercourse guidance for your goal">
+                        <button type="button" data-goal="off" class="seg goal-btn active">Off</button>
+                        <button type="button" data-goal="avoid" class="seg goal-btn">Avoid</button>
+                        <button type="button" data-goal="conceive" class="seg goal-btn">Conceive</button>
+                    </div>
+                </div>
             </div>
             <div class="cycle-bar-right">
                 <div class="seg-control seg-sm" id="view-modes" title="How many recent cycles to show">
@@ -107,6 +115,9 @@
                     <div id="preview-interp" class="preview-interp"></div>
                 </div>
             </div>
+
+            <!-- Intercourse guidance (shown when a goal is set) -->
+            <div id="entry-guidance" class="guidance hidden"></div>
 
             <!-- Day 7 breast self-exam reminder (shown only on day 7) -->
             <div id="bse-reminder" class="entry-banner hidden">
