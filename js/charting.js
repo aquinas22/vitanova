@@ -282,7 +282,7 @@
                 return { level: 'available', title: 'Likely available', detail: 'Post-Peak infertile phase — any time, day or evening.' };
             }
             // Dry day before Peak.
-            return { level: 'available', title: 'Available — evenings, EOD', detail: 'Dry day before Peak: evenings only and every other day, so residue isn’t mistaken for mucus.' };
+            return { level: 'available', title: 'Available — evenings (EOD)', detail: 'Dry day before Peak: evenings only (EOD) and every other day, so residue isn’t mistaken for mucus.' };
         }
 
         // intent === 'conceive'
