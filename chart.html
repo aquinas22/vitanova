@@ -27,6 +27,8 @@
             <a href="index.html">Home</a>
             <a href="index.html#learn">Learn</a>
             <a href="rules.html">Rules</a>
+            <a href="https://noahroe.site" target="_blank" rel="noopener" class="btn btn-ghost btn-sm">By Noah Roe</a>
+            <a href="https://buymeacoffee.com/aquinas22" target="_blank" rel="noopener" class="btn btn-outline btn-sm">☕ Donate</a>
             <button id="sync-btn" class="btn btn-ghost btn-sm">Sign in to sync</button>
         </nav>
     </header>
@@ -198,6 +200,14 @@
             <button id="export-close" class="modal-close" aria-label="Close">×</button>
             <h2 id="export-title" class="modal-title">Export to PDF</h2>
             <p class="muted small">Opens your browser's print dialog — choose <strong>“Save as PDF”</strong>. Charts print in landscape, trimmed to your last observation in each cycle.</p>
+
+            <div class="entry-section">
+                <h3 class="entry-label">Format</h3>
+                <div class="seg-control seg-sm" id="export-format">
+                    <button type="button" data-format="vitanova" class="seg active">Vita Nova</button>
+                    <button type="button" data-format="standard" class="seg">Standard Chart</button>
+                </div>
+            </div>
 
             <div class="entry-section">
                 <h3 class="entry-label">How many cycles?</h3>

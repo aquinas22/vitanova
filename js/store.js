@@ -58,7 +58,7 @@
         return {
             version: 1,
             cycles: [blankCycle(1, null)],
-            updatedAt: new Date().toISOString()
+            updatedAt: null
         };
     }
 
@@ -146,6 +146,50 @@
     }
 
     /* ----------------------------------------------------------------------
+       Client-side encryption — Firestore receives ciphertext, never plaintext.
+       The AES-GCM key is generated once and lives only in localStorage; if this
+       device's localStorage is wiped the cloud copy becomes unreadable (by design).
+       ---------------------------------------------------------------------- */
+    const crypt = {
+        async _key() {
+            const stored = localStorage.getItem('vitanova.key.v1');
+            if (stored) {
+                return window.crypto.subtle.importKey(
+                    'jwk', JSON.parse(stored), { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']
+                );
+            }
+            const k = await window.crypto.subtle.generateKey(
+                { name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']
+            );
+            localStorage.setItem('vitanova.key.v1',
+                JSON.stringify(await window.crypto.subtle.exportKey('jwk', k)));
+            return k;
+        },
+
+        async encrypt(payload) {
+            const k = await this._key();
+            const iv = window.crypto.getRandomValues(new Uint8Array(12));
+            const ct = await window.crypto.subtle.encrypt(
+                { name: 'AES-GCM', iv }, k,
+                new TextEncoder().encode(JSON.stringify(payload))
+            );
+            return {
+                enc: true,
+                iv: btoa(String.fromCharCode(...iv)),
+                data: btoa(String.fromCharCode(...new Uint8Array(ct)))
+            };
+        },
+
+        async decrypt(envelope) {
+            const k = await this._key();
+            const iv = Uint8Array.from(atob(envelope.iv), function (c) { return c.charCodeAt(0); });
+            const ct = Uint8Array.from(atob(envelope.data), function (c) { return c.charCodeAt(0); });
+            const pt = await window.crypto.subtle.decrypt({ name: 'AES-GCM', iv }, k, ct);
+            return JSON.parse(new TextDecoder().decode(pt));
+        }
+    };
+
+    /* ----------------------------------------------------------------------
        Optional cloud sync — lazy, isolated, non-fatal.
        ---------------------------------------------------------------------- */
     const cloud = {
@@ -207,7 +251,9 @@
                 const ref = fs.doc(cfg.db, 'charts', this.user.uid);
                 const snap = await fs.getDoc(ref);
                 if (snap.exists()) {
-                    const remote = snap.data();
+                    const raw = snap.data();
+                    // ponytail: decrypt if encrypted; plain fallback for legacy docs
+                    const remote = raw.enc ? await crypt.decrypt(raw) : raw;
                     // Last-write-wins by timestamp.
                     if (!data.updatedAt || (remote.updatedAt && remote.updatedAt > data.updatedAt)) {
                         data = normalizeData(remote);
@@ -229,7 +275,7 @@
             try {
                 const { cfg, fs } = await this._modules();
                 const ref = fs.doc(cfg.db, 'charts', this.user.uid);
-                await fs.setDoc(ref, payload);
+                await fs.setDoc(ref, await crypt.encrypt(payload));
             } catch (err) {
                 console.warn('Cloud save failed; data is still saved locally.', err);
             }

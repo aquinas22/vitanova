@@ -745,6 +745,19 @@ textarea, #notes-input {
     .pc-notes h2 { font-size: 11pt; margin: 0 0 6px; }
     .pc-note { font-size: 8.5pt; margin-bottom: 3px; }
     .pc-foot { margin-top: 18px; font-size: 7.5pt; color: #666; font-style: italic; }
+
+    /* Standard Chart layout */
+    .sc-cycle { margin-bottom: 20px; page-break-inside: avoid; border-top: 1pt solid #ccc; padding-top: 10px; }
+    .sc-cycle:first-of-type { border-top: none; padding-top: 0; }
+    .sc-table { border-collapse: collapse; width: 100%; table-layout: fixed; }
+    .sc-label { width: 10%; font-size: 7pt; font-weight: 700; text-align: right; padding-right: 5pt; color: #444; border-right: 1pt solid #999; white-space: nowrap; }
+    .sc-cell { border: 0.5pt solid #bbb; text-align: center; padding: 2px 0; font-size: 7pt; vertical-align: middle; }
+    .sc-day { font-weight: 800; }
+    .sc-date { font-size: 5.5pt; color: #555; }
+    .sc-sticker { --size: 20px; margin: 1px auto; box-shadow: none; border-width: 1pt; }
+    .sc-sticker .sticker-count { font-size: 5.5pt; box-shadow: none; }
+    .sc-code { font-size: 6pt; font-weight: 700; word-break: break-all; }
+    .sc-i { color: #6a4a8a; font-weight: 800; }
 }
 
 /* Utilities */

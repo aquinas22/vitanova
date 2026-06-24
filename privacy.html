@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#fff5f7">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Vita Nova">
+    <title>Privacy Policy · Vita Nova</title>
+    <meta name="description" content="How Vita Nova stores and protects your fertility chart data.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .privacy-wrap { max-width: 720px; margin: 0 auto; }
+        .privacy-wrap h2 { font-family: 'Fraunces', Georgia, serif; font-size: 1.25rem; margin: 2rem 0 .5rem; color: var(--color-text); }
+        .privacy-wrap p, .privacy-wrap li { line-height: 1.75; color: var(--color-muted, #555); margin-bottom: .75rem; }
+        .privacy-wrap ul { padding-left: 1.4rem; }
+        .privacy-wrap ul li { list-style: disc; }
+        .privacy-wrap .highlight-box { background: #f0faf3; border-left: 4px solid #4caf50; border-radius: 6px; padding: 1rem 1.25rem; margin: 1.5rem 0; }
+        .privacy-wrap .highlight-box p { margin: 0; color: #2e7d32; font-weight: 600; }
+        .privacy-wrap .updated { font-size: .85rem; color: #999; margin-top: .25rem; }
+    </style>
+</head>
+
+<body>
+
+    <header class="site-header">
+        <a class="logo" href="index.html"><span class="logo-mark">🌸</span> Vita Nova</a>
+        <button class="nav-toggle" id="nav-toggle" aria-label="Menu" aria-expanded="false" aria-controls="site-nav">
+            <span></span><span></span><span></span>
+        </button>
+        <nav class="site-nav" id="site-nav">
+            <a href="index.html">Home</a>
+            <a href="index.html#learn">Learn</a>
+            <a href="rules.html">Rules</a>
+            <a href="chart.html" class="btn btn-primary btn-sm">Open my chart</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="section">
+            <div class="privacy-wrap">
+                <h1 class="section-title" style="text-align:left">Privacy Policy</h1>
+                <p class="updated">Effective June 23, 2026</p>
+
+                <p>Vita Nova is a fertility charting tool. We know that cycle data — observations, peak days,
+                intercourse — is among the most personal health information you have. This policy explains
+                exactly how your data is stored, who can see it, and what we do (and don't do) with it.</p>
+
+                <div class="highlight-box">
+                    <p>Short version: your chart lives on your device. If you sign in for cloud backup, the
+                    data is encrypted on your device before it is uploaded — we cannot read it, and neither
+                    can anyone who accesses the cloud database.</p>
+                </div>
+
+                <h2>1. No account required</h2>
+                <p>By default, Vita Nova stores your chart exclusively in your browser's
+                <code>localStorage</code>. No account is created, no data leaves your device, and no server
+                ever sees your observations. Clearing your browser data will erase your chart — so use the
+                export feature if you want a backup.</p>
+
+                <h2>2. Optional cloud backup (sign-in)</h2>
+                <p>You may choose to sign in with Google or an email and password to back up your chart to
+                the cloud and access it on multiple devices. When you do:</p>
+                <ul>
+                    <li><strong>Your data is encrypted on your device</strong> before it is uploaded, using
+                    AES-256-GCM (the same standard used by banks and governments). The encryption key is
+                    generated on your device and stored only in your browser — it never leaves your
+                    device.</li>
+                    <li>Our cloud database (Google Firebase Firestore) stores an encrypted blob. Even Google,
+                    Firebase, or we cannot read the contents of your chart without your device's key.</li>
+                    <li>Your email address and account information are stored by Firebase Authentication in
+                    order to identify your account. This is standard for any sign-in system.</li>
+                </ul>
+
+                <h2>3. What data we collect</h2>
+                <ul>
+                    <li><strong>If you never sign in:</strong> nothing. All data stays in your browser.</li>
+                    <li><strong>If you sign in:</strong> your email address (or Google account identifier),
+                    and an encrypted copy of your chart. The chart contains whatever you have entered:
+                    flow type, mucus observations, peak day markers, intercourse indicators, and any
+                    free-text notes.</li>
+                </ul>
+                <p>We do not use analytics, crash reporting, advertising trackers, or any other third-party
+                scripts beyond Firebase (authentication and encrypted storage).</p>
+
+                <h2>4. Who can see your data</h2>
+                <ul>
+                    <li><strong>You.</strong> Only someone with your signed-in device (which holds the
+                    encryption key) can decrypt your chart.</li>
+                    <li><strong>Google / Firebase</strong> stores the encrypted blob as infrastructure. They
+                    cannot read the contents. Their privacy policy governs their handling of infrastructure
+                    data: <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">policies.google.com/privacy</a>.</li>
+                    <li><strong>No one else.</strong> We do not sell, share, rent, or otherwise disclose
+                    your data to any third party for any purpose.</li>
+                </ul>
+
+                <h2>5. Data retention and deletion</h2>
+                <ul>
+                    <li>To delete your local chart: use the "Reset all data" option in the app.</li>
+                    <li>To delete your cloud account and all stored data: sign in, then use the delete
+                    account option in your profile, or email us and we will remove it within 30 days.</li>
+                    <li>Clearing your browser's site data removes the local chart and the encryption key.
+                    If the key is gone, the cloud copy cannot be decrypted — it becomes permanently
+                    inaccessible.</li>
+                </ul>
+
+                <h2>6. Children</h2>
+                <p>Vita Nova is not directed at children under 13. We do not knowingly collect data from
+                children under 13. If you believe a child has created an account, contact us and we will
+                delete it.</p>
+
+                <h2>7. Changes to this policy</h2>
+                <p>If we make material changes, we will update the effective date at the top of this page.
+                Continued use of the app after a change constitutes acceptance of the revised policy.</p>
+
+                <h2>8. Contact</h2>
+                <p>Questions or deletion requests: <a href="mailto:noah.p.roe@gmail.com">noah.p.roe@gmail.com</a></p>
+
+                <p class="disclaimer" style="margin-top:2rem">Vita Nova is an independent educational tool and does not provide medical advice.
+                This privacy policy does not constitute legal advice. If you have compliance requirements
+                (HIPAA, GDPR, CCPA), consult a qualified attorney.</p>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <p><span class="logo-mark">🌸</span> Vita Nova Charting &middot; <a href="https://noahroe.site" target="_blank" rel="noopener">By Noah Roe</a></p>
+        <p class="muted small">Made with care. Your data stays on your device unless you choose to sync. &middot; <a href="privacy.html">Privacy Policy</a></p>
+        <p style="margin-top:12px"><a href="https://buymeacoffee.com/aquinas22" target="_blank" rel="noopener" class="btn btn-outline btn-sm">☕ Buy me a coffee</a></p>
+    </footer>
+
+    <script src="js/nav.js"></script>
+</body>
+
+</html>

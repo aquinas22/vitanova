@@ -612,13 +612,62 @@
         '</div>';
     }
 
+    // Standard Chart — row-per-data-type layout (Creighton-style paper chart).
+    function cyclePrintHtmlStandard(cycle, opts) {
+        const days = cycle.days;
+        const last = lastEntryIndex(days);
+        if (last < 0) return '';
+        const shown = days.slice(0, last + 1);
+        const peakIndex = C.findPeakIndex(days);
+        const s = C.summarizeCycle(days);
+
+        function row(label, fn) {
+            return '<tr><th class="sc-label">' + label + '</th>' +
+                shown.map(fn).join('') + '</tr>';
+        }
+        function cell(content, cls) {
+            return '<td class="sc-cell' + (cls ? ' ' + cls : '') + '">' + (content || '') + '</td>';
+        }
+
+        let table = '<table class="sc-table">' +
+            row('Day', function (d) { return cell(d.day, 'sc-day'); }) +
+            row('Date', function (d, i) { const dt = dayDate(cycle.startDate, i); return cell(dt ? escapeHtml(dt) : '', 'sc-date'); }) +
+            row('Sticker', function (d, i) {
+                const st = C.getSticker(d, i, days);
+                const lbl = C.peakLabel(i, peakIndex);
+                return cell('<span class="sticker sc-sticker ' + STICKER_CLASS[st] + '">' + stickerInner(st, lbl) + '</span>');
+            }) +
+            row('Code', function (d) { const c = C.buildCode(d); return cell(c ? escapeHtml(c) : '', 'sc-code'); });
+
+        if (opts.includeIntercourse) {
+            table += row('I', function (d) { return cell(d.intercourse ? 'I' : '', 'sc-i'); });
+        }
+        table += '</table>';
+
+        const notes = opts.includeNotes ? shown.filter(function (d) { return d.notes; }) : [];
+        return '<div class="sc-cycle">' +
+            '<div class="pc-meta">' +
+                '<span><strong>' + escapeHtml(cycle.name) + '</strong></span>' +
+                (cycle.startDate ? '<span>Start: ' + escapeHtml(cycle.startDate) + '</span>' : '') +
+                (s.peakDay ? '<span>Peak: Day ' + s.peakDay + '</span>' : '') +
+                '<span>' + s.recordedDays + ' days charted</span>' +
+            '</div>' +
+            table +
+            (notes.length ? '<div class="pc-notes"><h3>Notes</h3>' +
+                notes.map(function (d) {
+                    return '<div class="pc-note"><strong>Day ' + d.day + ':</strong> ' + escapeHtml(d.notes) + '</div>';
+                }).join('') + '</div>' : '') +
+        '</div>';
+    }
+
     function printChart(opts) {
         const all = Store.getData().cycles;
         if (!all.length) return;
         const n = opts.count === 'all' ? all.length : Math.min(opts.count, all.length);
         const chosen = all.slice(-n).reverse(); // most recent first
+        const htmlFn = opts.format === 'standard' ? cyclePrintHtmlStandard : cyclePrintHtml;
         const blocks = chosen
-            .map(function (c) { return cyclePrintHtml(c, opts); })
+            .map(function (c) { return htmlFn(c, opts); })
             .filter(Boolean);
 
         if (!blocks.length) {
@@ -669,11 +718,11 @@
     }
 
     function wireExport() {
-        $('export-count').addEventListener('click', function (e) {
-            const btn = e.target.closest('.seg');
-            if (!btn) return;
-            $('export-count').querySelectorAll('.seg').forEach(function (b) {
-                b.classList.toggle('active', b === btn);
+        [$('export-format'), $('export-count')].forEach(function (ctrl) {
+            ctrl.addEventListener('click', function (e) {
+                const btn = e.target.closest('.seg');
+                if (!btn) return;
+                ctrl.querySelectorAll('.seg').forEach(function (b) { b.classList.toggle('active', b === btn); });
             });
         });
 
@@ -682,13 +731,15 @@
         exportModal.addEventListener('click', function (e) { if (e.target === exportModal) closeExport(); });
 
         $('export-go').addEventListener('click', function () {
-            const active = $('export-count').querySelector('.seg.active');
-            const raw = active ? active.dataset.count : '6';
+            const activeCount = $('export-count').querySelector('.seg.active');
+            const raw = activeCount ? activeCount.dataset.count : '6';
+            const activeFormat = $('export-format').querySelector('.seg.active');
+            const format = activeFormat ? activeFormat.dataset.format : 'vitanova';
             closeExport();
-            // Let the dialog close paint before opening the print dialog.
             setTimeout(function () {
                 printChart({
                     count: raw === 'all' ? 'all' : parseInt(raw, 10),
+                    format: format,
                     includeNotes: $('export-notes').checked,
                     includeIntercourse: $('export-intercourse').checked
                 });
