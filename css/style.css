@@ -170,6 +170,8 @@ code {
 .site-nav a:hover { color: var(--rose-600); text-decoration: none; }
 .site-nav .btn { color: #fff; }
 .site-nav .btn:hover { color: #fff; }
+.site-nav .btn-outline { color: var(--rose-600); }
+.site-nav .btn-outline:hover { color: var(--rose-600); }
 
 /* Hamburger toggle — hidden on desktop, shown on mobile via media query */
 .nav-toggle {
